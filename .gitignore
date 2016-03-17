@@ -1,4 +1,4 @@
 /node_modules
-/lib/iedriver
+/lib/edgedriver
 /tmp
 npm-debug.log

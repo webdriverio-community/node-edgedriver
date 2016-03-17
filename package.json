@@ -1,16 +1,16 @@
 {
-  "name": "iedriver",
-  "version": "2.52.2",
+  "name": "edgedriver",
+  "version": "2.1.14279",
   "keywords": [
-    "iedriver",
-    "iedriverserver",
+    "edgedriver",
+    "edgedriverserver",
     "selenium"
   ],
-  "description": "IEDriver for Selenium",
-  "homepage": "https://github.com/barretts/node-iedriver",
+  "description": "Microsofts' EdgeDriver for Selenium",
+  "homepage": "https://github.com/barretts/node-edgedriver",
   "repository": {
     "type": "git",
-    "url": "git://github.com/barretts/node-iedriver.git"
+    "url": "git://github.com/barretts/node-edgedriver.git"
   },
   "licenses": [
     {
@@ -21,17 +21,16 @@
   "author": {
     "name": "Barrett Sonntag",
     "email": "barrett@sosuke.com",
-    "url": "http://www.sosuke.com"
+    "url": "https://www.sosuke.com"
   },
-  "main": "lib/iedriver",
+  "main": "lib/edgedriver",
   "bin": {
-    "iedriver": "./bin/iedriver"
+    "edgedriver": "./bin/edgedriver"
   },
   "scripts": {
     "install": "node install.js"
   },
   "dependencies": {
-    "adm-zip": "0.2.1",
     "kew": "~0.1.7",
     "md5-file": "^1.1.4",
     "mkdirp": "0.3.5",

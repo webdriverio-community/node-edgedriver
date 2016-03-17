@@ -1,9 +1,8 @@
 'use strict'
 
-var AdmZip = require('adm-zip')
 var cp = require('child_process')
 var fs = require('fs')
-var helper = require('./lib/iedriver')
+var helper = require('./lib/edgedriver')
 var http = require('http')
 var kew = require('kew')
 var npmconf = require('npmconf')
@@ -14,18 +13,16 @@ var url = require('url')
 var util = require('util')
 var md5file = require('md5-file')
 
-var libPath = path.join(__dirname, 'lib', 'iedriver')
-var downloadUrl = 'http://selenium-release.storage.googleapis.com/%s/IEDriverServer_Win32_%s.zip'
+var libPath = path.join(__dirname, 'lib', 'edgedriver')
+var downloadUrl = 'http://download.microsoft.com/download/1/4/1/14156DA0-D40F-460A-B14D-1B264CA081A5/MicrosoftWebDriver.exe'
 var platform = process.platform
 
 if (platform !== 'win32') {
-  console.log('IEDriverServer only works on Windows:', process.platform, process.arch)
+  console.log('EdgeDriverServer only works on Windows:', process.platform, process.arch)
   process.exit(1)
 }
 
-downloadUrl = util.format(downloadUrl, helper.version, helper.binaryversion);
-
-var fileName = util.format('IEDriverServer_Win32_%s.zip', helper.binaryversion);
+var fileName = 'MicrosoftWebDriver.exe';
 
 npmconf.load(function(err, conf) {
   if (err) {
@@ -50,16 +47,13 @@ npmconf.load(function(err, conf) {
     return validateMd5(downloadedFile, helper.md5)
   })
   .then(function () {
-    return extractDownload(downloadedFile, tmpPath)
-  })
-  .then(function () {
     return copyIntoPlace(tmpPath, libPath)
   })
   .then(function () {
-    console.log('Done. iedriver binary available at', helper.path)
+    console.log('Done. edgedriver binary available at', helper.path)
   })
   .fail(function (err) {
-    console.error('iedriver installation failed', err, err.stack)
+    console.error('edgedriver installation failed', err, err.stack)
     process.exit(1)
   })
 })
@@ -74,7 +68,7 @@ function findSuitableTempDirectory(npmConf) {
   ]
 
   for (var i = 0; i < candidateTmpDirs.length; i++) {
-    var candidatePath = path.join(candidateTmpDirs[i], 'iedriver')
+    var candidatePath = path.join(candidateTmpDirs[i], 'edgedriver')
 
     try {
       mkdirp.sync(candidatePath, '0777')
@@ -87,7 +81,7 @@ function findSuitableTempDirectory(npmConf) {
     }
   }
 
-  console.error('Can not find a writable tmp directory, please report issue on https://github.com/barretts/iedriver/issues/ with as much information as possible.');
+  console.error('Can not find a writable tmp directory, please report issue on https://github.com/barretts/edgedriver/issues/ with as much information as possible.');
   process.exit(1);
 }
 
@@ -162,22 +156,6 @@ function validateMd5(filePath, md5value) {
     deferred.reject('Error trying to match md5 checksum')
   }
 
-  return deferred.promise
-}
-
-
-function extractDownload(filePath, tmpPath) {
-  var deferred = kew.defer()
-  var options = {cwd: tmpPath}
-
-  console.log('Extracting zip contents')
-  try {
-    var zip = new AdmZip(filePath)
-    zip.extractAllTo(tmpPath, true)
-    deferred.resolve(true)
-  } catch (err) {
-    deferred.reject('Error extracting archive ' + err.stack)
-  }
   return deferred.promise
 }
 

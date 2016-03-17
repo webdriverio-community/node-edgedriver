@@ -1,22 +1,15 @@
-IEDriver
+EdgeDriver
 =======
 
-An NPM wrapper for Selenium [IEDriver](http://selenium-release.storage.googleapis.com).
+An NPM wrapper for Microsofts' Selenium [EdgeDriver](https://www.microsoft.com/en-us/download/details.aspx?id=48740).
 
-[IEDriver changelog](https://raw.githubusercontent.com/SeleniumHQ/selenium/master/cpp/iedriverserver/CHANGELOG)
-
-Testing notes
------------------------
-If you're testing on Windows 8 KB3025390 from Janurary 5th 2015 breaks IEDriver, just uninstall that update.
-
-More tips on getting setup right: http://heliumhq.com/docs/internet_explorer
-
+[EdgeDriver changelog](https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/)
 
 Building and Installing
 -----------------------
 
 ```shell
-npm install iedriver
+npm install edgedriver
 ```
 
 Or grab the source and
@@ -26,30 +19,30 @@ node ./install.js
 ```
 
 What this is really doing is just grabbing a particular "blessed" (by
-this module) version of IEDriver. As new versions are released
+this module) version of EdgeDriver. As new versions are released
 and vetted, this module will be updated accordingly.
 
-The package has been set up to fetch and run IEDriver for Windows.
+The package has been set up to fetch and run EdgeDriver for Windows.
 
 Versioning
 ----------
 
-The NPM package version tracks the version of iedriver that will be installed,
+The NPM package version tracks the version of edgedriver that will be installed,
 with an additional build number that is used for revisions to the installer.
 
-A Note on iedriver
+A Note on edgedriver
 -------------------
 
-IEDriver is not a library for NodeJS.
+EdgeDriver is not a library for NodeJS.
 
-This is an _NPM wrapper_ and can be used to conveniently make IEDriver available
+This is an _NPM wrapper_ and can be used to conveniently make EdgeDriver available
 It is not a Node JS wrapper.
 
 Contributing
 ------------
 
 Questions, comments, bug reports, and pull requests are all welcome.  Submit them at
-[the project on GitHub](https://github.com/barretts/node-iedriver/).
+[the project on GitHub](https://github.com/barretts/node-edgedriver/).
 
 Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests.
