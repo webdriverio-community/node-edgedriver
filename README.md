@@ -1,3 +1,5 @@
+# I haven't personally tested this WebDriver at all. This is pre-emptive.
+
 EdgeDriver
 =======
 
