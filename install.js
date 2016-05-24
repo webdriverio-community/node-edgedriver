@@ -42,10 +42,6 @@ npmconf.load(function(err, conf) {
     console.log('Saving to', downloadedFile)
     return requestBinary(getRequestOptions(conf.get('proxy')), downloadedFile)
   })
-  promise.then(function () {
-    console.log('expect file md5: ', md5file(downloadedFile), 'to equal ', helper.md5)
-    return validateMd5(downloadedFile, helper.md5)
-  })
   .then(function () {
     return copyIntoPlace(tmpPath, libPath)
   })
