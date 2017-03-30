@@ -18,8 +18,7 @@ var downloadUrl = 'http://download.microsoft.com/download/1/4/1/14156DA0-D40F-46
 var platform = process.platform
 
 if (platform !== 'win32') {
-  console.log('EdgeDriverServer only works on Windows:', process.platform, process.arch)
-  process.exit(1)
+  console.warn('NOTE: EdgeDriverServer only works on Windows, you are using:', process.platform, process.arch)
 }
 
 var fileName = 'MicrosoftWebDriver.exe';
