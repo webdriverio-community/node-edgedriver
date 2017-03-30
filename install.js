@@ -14,7 +14,7 @@ var util = require('util')
 var md5file = require('md5-file')
 
 var libPath = path.join(__dirname, 'lib', 'edgedriver')
-var downloadUrl = 'https://download.microsoft.com/download/3/2/D/32D3E464-F2EF-490F-841B-05D53C848D15/MicrosoftWebDriver.exe'
+var downloadUrl = 'http://download.microsoft.com/download/3/2/D/32D3E464-F2EF-490F-841B-05D53C848D15/MicrosoftWebDriver.exe'
 var platform = process.platform
 
 if (platform !== 'win32') {
@@ -45,7 +45,7 @@ npmconf.load(function(err, conf) {
     return copyIntoPlace(tmpPath, libPath)
   })
   .then(function () {
-    console.log('Done. edgedriver binary available at', helper.path)
+    console.log('Done. edgedriver binary available at',  libPath+"\\MicrosoftWebDriver.exe")
   })
   .fail(function (err) {
     console.error('edgedriver installation failed', err, err.stack)
