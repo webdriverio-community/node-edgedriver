@@ -3,7 +3,7 @@
 var cp = require('child_process')
 var fs = require('fs')
 var helper = require('./lib/edgedriver')
-var http = require('http')
+var request = require('request')
 var kew = require('kew')
 var npmconf = require('npmconf')
 var mkdirp = require('mkdirp')
@@ -14,7 +14,7 @@ var util = require('util')
 var md5file = require('md5-file')
 
 var libPath = path.join(__dirname, 'lib', 'edgedriver')
-var downloadUrl = 'http://download.microsoft.com/download/3/2/D/32D3E464-F2EF-490F-841B-05D53C848D15/MicrosoftWebDriver.exe'
+var downloadUrl = 'https://download.microsoft.com/download/3/4/2/342316D7-EBE0-4F10-ABA2-AE8E0CDF36DD/MicrosoftWebDriver.exe'
 var platform = process.platform
 
 if (platform !== 'win32') {
@@ -39,7 +39,7 @@ npmconf.load(function(err, conf) {
   promise = promise.then(function () {
     console.log('Downloading', downloadUrl)
     console.log('Saving to', downloadedFile)
-    return requestBinary(getRequestOptions(conf.get('proxy')), downloadedFile)
+    return requestBinary(downloadUrl, downloadedFile)
   })
   .then(function () {
     return copyIntoPlace(tmpPath, libPath)
@@ -81,56 +81,18 @@ function findSuitableTempDirectory(npmConf) {
 }
 
 
-function getRequestOptions(proxyUrl) {
-  if (proxyUrl) {
-    var options = url.parse(proxyUrl)
-    options.path = downloadUrl
-    options.headers = { Host: url.parse(downloadUrl).host }
-    // Turn basic authorization into proxy-authorization.
-    if (options.auth) {
-      options.headers['Proxy-Authorization'] = 'Basic ' + new Buffer(options.auth).toString('base64')
-      delete options.auth
-    }
-
-    return options
-  } else {
-    return url.parse(downloadUrl)
-  }
-}
-
-
-function requestBinary(requestOptions, filePath) {
+function requestBinary(_downloadUrl, filePath) {
   var deferred = kew.defer()
 
-  var count = 0
-  var notifiedCount = 0
-  var outFile = fs.openSync(filePath, 'w')
-
-  var client = http.get(requestOptions, function (response) {
-    var status = response.statusCode
-    console.log('Receiving...')
-
-    if (status === 200) {
-      response.addListener('data',   function (data) {
-        fs.writeSync(outFile, data, 0, data.length, null)
-        count += data.length
-        if ((count - notifiedCount) > 800000) {
-          console.log('Received ' + Math.floor(count / 1024) + 'K...')
-          notifiedCount = count
-        }
+  request
+      .get(_downloadUrl)
+      .on('error', function (err) {
+          deferred.reject('Error with http request: ' + util.inspect(response.headers))
       })
-
-      response.addListener('end',   function () {
-        console.log('Received ' + Math.floor(count / 1024) + 'K total.')
-        fs.closeSync(outFile)
-        deferred.resolve(true)
+      .on('end', function () {
+          deferred.resolve(true)
       })
-
-    } else {
-      client.abort()
-      deferred.reject('Error with http request: ' + util.inspect(response.headers))
-    }
-  })
+      .pipe(fs.createWriteStream(filePath))
 
   return deferred.promise
 }
