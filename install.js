@@ -24,7 +24,10 @@ var microsoftWebDriverDownloadUrls = {
   '16299': 'https://download.microsoft.com/download/D/4/1/D417998A-58EE-4EFE-A7CC-39EF9E020768/MicrosoftWebDriver.exe',
 }
 var osBuildNumber = os.release().split('.')[2]
-var downloadUrl = microsoftWebDriverDownloadUrls[osBuildNumber]
+var downloadUrl = ''
+if (osBuildNumber in microsoftWebDriverDownloadUrls) {
+  downloadUrl = microsoftWebDriverDownloadUrls[osBuildNumber]
+}
 
 var platform = process.platform
 
@@ -32,8 +35,8 @@ var platform = process.platform
 var fileName = 'MicrosoftWebDriver.exe';
 
 npmconf.load(function(err, conf) {
-  if (platform !== 'win32') {
-    console.warn('NOTE: EdgeDriverServer only works on Windows, you are using:', process.platform, process.arch)
+  if (downloadUrl == '') {
+    console.warn('NOTE: Cannot find Microsoft WebDriver for the current OS:', process.platform, process.arch, os.release())
     process.exit(0)
     return
   }
