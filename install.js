@@ -29,9 +29,6 @@ if (osBuildNumber in microsoftWebDriverDownloadUrls) {
   downloadUrl = microsoftWebDriverDownloadUrls[osBuildNumber]
 }
 
-var platform = process.platform
-
-
 var fileName = 'MicrosoftWebDriver.exe';
 
 npmconf.load(function(err, conf) {
