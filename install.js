@@ -34,7 +34,7 @@ var fileName = 'MicrosoftWebDriver.exe';
 npmconf.load(function(err, conf) {
   if (platform !== 'win32') {
     console.warn('NOTE: EdgeDriverServer only works on Windows, you are using:', process.platform, process.arch)
-    process.exit(1)
+    process.exit(0)
     return
   }
 
