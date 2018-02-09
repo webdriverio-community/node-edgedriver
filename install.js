@@ -29,10 +29,12 @@ if (osBuildNumber in microsoftWebDriverDownloadUrls) {
   downloadUrl = microsoftWebDriverDownloadUrls[osBuildNumber]
 }
 
+console.log('downloadUrl: ' + downloadUrl)
+
 var fileName = 'MicrosoftWebDriver.exe';
 
 npmconf.load(function(err, conf) {
-  if (downloadUrl == '') {
+  if (downloadUrl === '') {
     console.warn('NOTE: Cannot find Microsoft WebDriver for the current OS:', process.platform, process.arch, os.release())
     process.exit(0)
     return
