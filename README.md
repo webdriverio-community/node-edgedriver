@@ -1,3 +1,8 @@
+# You may not need this package!
+The WebDriver download page (https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/) says it is now a Windows Feature installable by the command:
+
+`DISM.exe /Online /Add-Capability /CapabilityName:Microsoft.WebDriver~~~~0.0.1.0`
+
 # I haven't personally tested this WebDriver at all. This is pre-emptive.
 
 EdgeDriver
