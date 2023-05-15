@@ -2,3 +2,5 @@
 /lib/edgedriver
 /tmp
 npm-debug.log
+dist
+.bin
