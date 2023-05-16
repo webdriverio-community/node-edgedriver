@@ -3,7 +3,7 @@
   "version": "4.17134.1",
   "description": "Microsofts' EdgeDriver for Node.js",
   "homepage": "https://webdriver.io",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "author": {
     "name": "Barrett Sonntag",
     "email": "barrett@sosuke.com",
