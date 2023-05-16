@@ -1,13 +1,13 @@
 import url from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import cp from 'node:child_process'
 import fsp from 'node:fs/promises'
 import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
 import unzipper from 'unzipper'
 import logger from '@wdio/logger'
+import { execa } from 'execa'
 import { transform } from 'camaro'
 
 import findEdgePath from './finder.js'
@@ -29,16 +29,8 @@ export async function download (edgeVersion?: string) {
   if (!edgeVersion) {
     const edgePath = findEdgePath()
     log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
-    const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
-      if (err) {
-        return reject(err)
-      }
-      if (stderr) {
-        return reject(new Error(stderr))
-      }
-      return resolve(stdout)
-    }))
-    edgeVersion = versionOutput.trim().split(' ').pop()
+    const versionOutput = await execa(edgePath, ['--version'])
+    edgeVersion = versionOutput.stdout.trim().split(' ').pop()
     log.info(`Detected Microsoft Edge v${edgeVersion}`)
   }
 
@@ -68,7 +60,7 @@ async function fetchVersion (edgeVersion: string) {
   const versionsSorted = uniqueVersions.sort((a, b) => a.localeCompare(b, undefined, { numeric:true })).reverse().map((v) => versions.filter((vv) => vv.version === v)).flat()
   const desiredVersion = versionsSorted.find((v) => v.version === edgeVersion && findByArchitecture(v.name))
   if (!desiredVersion) {
-    throw new Error(`No version "${edgeVersion}" found, latest versions available are ${versionsSorted.slice(0, 10).join(', ')}`)
+    throw new Error(`No version "${edgeVersion}" found, latest versions available are ${versionsSorted.slice(0, 10).map((v) => v.version).join(', ')}`)
   }
 
   return desiredVersion

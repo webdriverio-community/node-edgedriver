@@ -32,7 +32,7 @@
     "test": "run-s test:*",
     "test:lint": "eslint",
     "test:unit": "vitest --run",
-    "test:e2e": "node --loader ts-node/esm ./tests/e2e.test.ts",
+    "test:e2e": "node --loader ts-node/esm ./tests/test.e2e.ts",
     "watch": "npm run build -- --watch"
   },
   "devDependencies": {
@@ -59,6 +59,7 @@
     "camaro": "^6.2.0",
     "decamelize": "^6.0.0",
     "edge-paths": "^3.0.5",
+    "execa": "^7.1.1",
     "unzipper": "^0.10.14",
     "which": "^3.0.1",
     "yargs": "^17.7.2"
