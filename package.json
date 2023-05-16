@@ -31,7 +31,7 @@
     "install": "test -f ./dist/install.js && node ./dist/install.js || echo \"Skipping install, project not build!\"",
     "test": "run-s test:*",
     "test:lint": "eslint",
-    "test:e2e": "node  --loader ts-node/esm ./tests/e2e.test.ts",
+    "test:e2e": "node --loader ts-node/esm ./tests/e2e.test.ts",
     "watch": "npm run build -- --watch"
   },
   "devDependencies": {

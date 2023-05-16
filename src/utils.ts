@@ -21,7 +21,7 @@ export async function hasAccess(filePath: string) {
 
 export function findByArchitecture(name: string) {
   const arch = ['arm64', 'ppc64', 'x64', 's390x'].includes(os.arch())
-    ? '64' + (os.platform() === 'darwin' ? '_m1' : '')
+    ? '64' + (os.platform() === 'darwin' && os.arch() === 'arm64' ? '_m1' : '')
     : '32'
   const platformIdentifier = os.platform() === 'win32'
     ? 'win'
