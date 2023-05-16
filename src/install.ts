@@ -7,7 +7,7 @@ import cp from 'node:child_process'
 import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
-import unzipper from 'unzipper'
+import unzipper, { type Entry } from 'unzipper'
 import logger from '@wdio/logger'
 import { transform } from 'camaro'
 
@@ -98,8 +98,13 @@ function downloadZip(body: NodeJS.ReadableStream, targetDir: string) {
     })
   ]
 
-  stream.on('entry', (entry) => {
+  stream.on('entry', async (entry: Entry) => {
     const unzippedFilePath = path.join(targetDir, entry.path)
+    if (entry.type === 'Directory') {
+      await fsp.mkdir(unzippedFilePath, { recursive: true })
+      return
+    }
+
     const execStream = entry.pipe(fs.createWriteStream(unzippedFilePath))
     promiseChain.push(new Promise((resolve, reject) => {
       execStream.on('close', () => resolve(unzippedFilePath))
