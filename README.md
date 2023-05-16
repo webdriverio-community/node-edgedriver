@@ -23,7 +23,7 @@ By default, this package downloads Edgedriver when used for the first time throu
 EDGEDRIVER_AUTO_INSTALL=1 npm i
 ```
 
-To get a list of available CLI options run `npx edgedriver --help`. By default this package tries to find the Mircosoft Edge version installed on a given system, You can also use the environment variable `EDGEDRIVER_VERSION` to determine a custom version to be installed when running in CLI, e.g.:
+To get a list of available CLI options run `npx edgedriver --help`. By default this package tries to find the Mircosoft Edge version installed on a given system. If you prefer to have it install a custom EdgeDriver version you can define the environment variable `EDGEDRIVER_VERSION` when running in CLI, e.g.:
 
 ```sh
 $ npm i edgedriver
