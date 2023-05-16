@@ -19,7 +19,7 @@ import type { EdgeVersion } from './types.js'
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 const log = logger('edgedriver')
 
-export async function download (edgeVersion?: string) {
+export async function download (edgeVersion: string = process.env.EDGEDRIVER_VERSION) {
   const targetDir = path.resolve(__dirname, '..', '.bin')
   const binaryFilePath = path.resolve(targetDir, BINARY_FILE)
 
@@ -83,7 +83,7 @@ async function fetchVersion (edgeVersion: string) {
   const versionsSorted = uniqueVersions.sort((a, b) => a.localeCompare(b, undefined, { numeric:true })).reverse().map((v) => versions.filter((vv) => vv.version === v)).flat()
   const desiredVersion = versionsSorted.find((v) => v.version === edgeVersion && findByArchitecture(v.name))
   if (!desiredVersion) {
-    throw new Error(`No version "${edgeVersion}" found, latest versions available are ${versionsSorted.slice(0, 10).join(', ')}`)
+    throw new Error(`No version "${edgeVersion}" found, latest versions available are ${versionsSorted.map((v) => v.version).slice(0, 10).join(', ')}`)
   }
 
   return desiredVersion
