@@ -1,8 +1,9 @@
 import url from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import cp from 'node:child_process'
 import fsp from 'node:fs/promises'
+import os from 'node:os'
+import cp from 'node:child_process'
 import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
@@ -29,16 +30,7 @@ export async function download (edgeVersion?: string) {
   if (!edgeVersion) {
     const edgePath = findEdgePath()
     log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
-    const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
-      if (err) {
-        return reject(err)
-      }
-      if (stderr) {
-        return reject(new Error(stderr))
-      }
-      return resolve(stdout)
-    }))
-    edgeVersion = versionOutput.trim().split(' ').pop()
+    edgeVersion = os.platform() === 'win32' ? await getEdgeVersionWin(edgePath) : await getEdgeVersionUnix(edgePath)
     log.info(`Detected Microsoft Edge v${edgeVersion}`)
   }
 
@@ -54,6 +46,29 @@ export async function download (edgeVersion?: string) {
   await downloadZip(res.body, targetDir)
   await fsp.chmod(binaryFilePath, '755')
   return binaryFilePath
+}
+
+async function getEdgeVersionWin (edgePath: string) {
+  const versionPath = path.dirname(edgePath)
+  const contents = await fsp.readdir(versionPath)
+  const versions = contents.filter((p) => /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/g.test(p))
+
+  // returning oldest in case there is an updated version and Edge still hasn't relaunched
+  const oldest = versions.sort((a, b) => a > b ? 1 : -1)[0]
+  return oldest
+}
+
+async function getEdgeVersionUnix (edgePath: string) {
+  const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
+    if (err) {
+      return reject(err)
+    }
+    if (stderr) {
+      return reject(new Error(stderr))
+    }
+    return resolve(stdout)
+  }))
+  return versionOutput.trim().split(' ').pop()
 }
 
 async function fetchVersion (edgeVersion: string) {

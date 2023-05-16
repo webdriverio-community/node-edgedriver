@@ -32,7 +32,7 @@
     "test": "run-s test:*",
     "test:lint": "eslint",
     "test:unit": "vitest --run",
-    "test:e2e": "node --loader ts-node/esm ./tests/e2e.test.ts",
+    "test:e2e": "node --loader ts-node/esm ./tests/test.e2e.ts",
     "watch": "npm run build -- --watch"
   },
   "devDependencies": {
