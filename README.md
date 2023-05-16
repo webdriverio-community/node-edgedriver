@@ -65,6 +65,15 @@ cp.kill();
 
 __Note:__ as you can see in the example above this package does not wait for the driver to be up, you have to manage this yourself through packages like [`wait-on`](https://github.com/jeffbski/wait-on).
 
+## CJS Support
+
+In case your module uses CJS you can use this package as follows:
+
+```js
+const { start } = require('edgedriver')
+// see example above
+```
+
 ## Options
 
 The `start` method offers the following options to be passed on to the actual Edgedriver CLI.

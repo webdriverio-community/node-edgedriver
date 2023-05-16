@@ -18,9 +18,19 @@
     "type": "git",
     "url": "git://github.com/barretts/node-edgedriver.git"
   },
-  "main": "./dist/cjs/edgedriver",
-  "exports": "./dist/index.js",
   "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "exports": {
+    ".": [
+      {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "require": "./dist/cjs/index.js"
+      },
+      "./dist/cjs/index.js"
+    ]
+  },
   "bin": {
     "edgedriver": "./bin/edgedriver"
   },
