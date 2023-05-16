@@ -104,7 +104,10 @@ function downloadZip(body: NodeJS.ReadableStream, targetDir: string) {
       return
     }
 
-    await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
+    if (!await hasAccess(path.dirname(unzippedFilePath))) {
+      await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
+    }
+
     const execStream = entry.pipe(fs.createWriteStream(unzippedFilePath))
     promiseChain.push(new Promise((resolve, reject) => {
       execStream.on('close', () => resolve(unzippedFilePath))
