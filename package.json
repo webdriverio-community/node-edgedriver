@@ -28,7 +28,7 @@
     "build": "tsc -b .",
     "clean": "rimraf ./node_modules package-lock.yaml ./dist",
     "prepare": "husky install",
-    "install": "node ./dist/install.js",
+    "install": "test -f ./dist/install.js && node ./dist/install.js || echo \"Skipping install, project not build!\"",
     "test": "run-s test:*",
     "test:lint": "eslint",
     "test:e2e": "node  --loader ts-node/esm ./tests/e2e.test.ts",
