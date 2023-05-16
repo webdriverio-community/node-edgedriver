@@ -1,67 +1,149 @@
-# You may not need this package!
-The WebDriver download page (https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/) says it is now a Windows Feature installable by the command:
-
-`DISM.exe /Online /Add-Capability /CapabilityName:Microsoft.WebDriver~~~~0.0.1.0`
-
-# I haven't personally tested this WebDriver at all. This is pre-emptive.
-
 EdgeDriver
-=======
+==========
 
-An NPM wrapper for Microsofts' Selenium [EdgeDriver](https://www.microsoft.com/en-us/download/details.aspx?id=48740).
+An NPM wrapper for Microsofts' [EdgeDriver](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/). It manages to download various (or the latest) Edgedriver versions and provides a programmatic interface to start and stop it within Node.js. __Note:__ this is a wrapper module. If you discover any bugs with EdgeDriver, please report them in the [official repository](https://github.com/MicrosoftEdge/EdgeWebDriver).
 
-[EdgeDriver changelog](https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/)
+# Building and Installing
 
-Building and Installing
------------------------
+You can install this package via:
 
-```shell
+```sh
 npm install edgedriver
 ```
 
-Or grab the source and
+Once installed you can start Edgedriver via:
 
-```shell
-node ./install.js
+```sh
+npx edgedriver --port=4444
 ```
 
-What this is really doing is just grabbing a particular "blessed" (by
-this module) version of EdgeDriver. As new versions are released
-and vetted, this module will be updated accordingly.
+By default, this package downloads Edgedriver when used for the first time through the CLI or the programmatical interface. If you like to download it as part of the NPM install process, set the `EDGEDRIVER_AUTO_INSTALL` environment flag, e.g.:
 
-The package has been set up to fetch and run EdgeDriver for Windows.
+```sh
+EDGEDRIVER_AUTO_INSTALL=1 npm i
+```
 
-Versioning
-----------
+To get a list of available CLI options run `npx edgedriver --help`.
 
-The NPM package version tracks the version of edgedriver that will be installed,
-with an additional build number that is used for revisions to the installer.
+# Programmatic Interface
 
-A Note on edgedriver
--------------------
+You can import this package with Node.js and start the driver as part of your script and use it e.g. with [WebdriverIO](https://webdriver.io):
 
-EdgeDriver is not a library for NodeJS.
+```js
+import { start } from 'edgedriver';
+import { remote } from 'webdriverio';
+import waitPort from 'wait-port';
 
-This is an _NPM wrapper_ and can be used to conveniently make EdgeDriver available
-It is not a Node JS wrapper.
+/**
+ * first start EdgeDriver
+ */
+const cp = await start({ port: 4444 });
 
-Contributing
-------------
+/**
+ * wait for EdgeDriver to be up
+ */
+await waitPort({ port: 4444 });
 
-Questions, comments, bug reports, and pull requests are all welcome.  Submit them at
-[the project on GitHub](https://github.com/barretts/node-edgedriver/).
+/**
+ * then start WebdriverIO session
+ */
+const browser = await remote({ capabilities: { browserName: 'msedge' } });
+await browser.url('https://webdriver.io');
+console.log(await browser.getTitle()); // prints "WebdriverIO · Next-gen browser and mobile automation test framework for Node.js | WebdriverIO"
 
-Bug reports that include steps-to-reproduce (including code) are the
-best. Even better, make them in the form of pull requests.
+/**
+ * kill Edgedriver process
+ */
+cp.kill();
+```
 
-Author
-------
-[Barrett Sonntag](https://github.com/barretts)
+__Note:__ as you can see in the example above this package does not wait for the driver to be up, you have to manage this yourself through packages like [`wait-on`](https://github.com/jeffbski/wait-on).
 
+## Options
 
-Thanks to [Giovanni Bassi](https://github.com/giggio) for making the [ChromeDriver](https://github.com/giggio/node-chromedriver/) module this was based on.
+The `start` method offers the following options to be passed on to the actual Edgedriver CLI.
 
-License
--------
+### edgeDriverVersion
 
-Licensed under the Apache License, Version 2.0.
+The version of EdgeDriver to start. See https://msedgedriver.azureedge.net/ for all available versions, platforms and architecture.
+
+Type: `number`<br />
+Default: `latest`
+
+### port
+The port on which the driver should run.
+
+Example: `9515`<br >
+Type: `number`
+
+### adbPort
+The port on which the ADB driver should run.
+
+Example: `9515`<br >
+Type: `number`
+
+### baseUrl
+Base URL path prefix for commands, e.g. `wd/url`.
+
+Example: `/`
+
+Type: `string`
+
+### logPath
+Write server log to file instead of stderr, increases log level to `INFO`
+
+Type: `string`
+
+### logLevel
+Set log level. Possible options `ALL`, `DEBUG`, `INFO`, `WARNING`, `SEVERE`, `OFF`.
+
+Type: `string`
+
+### verbose
+Log verbosely (equivalent to `--log-level=ALL`)
+
+Type: `boolean`
+
+### silent
+Log nothing (equivalent to `--log-level=OFF`)
+
+Type: `boolean`
+
+### appendLog
+Append log file instead of rewriting.
+
+Type: `boolean`
+
+### replayable
+Log verbosely and don't truncate long strings so that the log can be replayed (experimental).
+
+Type: `boolean`
+
+### readableTimestamp
+Add readable timestamps to log.
+
+Type: `boolean`
+
+### enableChromeLogs
+Show logs from the browser (overrides other logging options).
+
+Type: `boolean`
+
+### bidiMapperPath
+Custom bidi mapper path.
+
+Type: `string`
+
+### allowedIps
+Comma-separated allowlist of remote IP addresses which are allowed to connect to EdgeDriver.
+
+Type: `string[]`
+
+### allowedOrigins
+Comma-separated allowlist of request origins which are allowed to connect to EdgeDriver. Using `*` to allow any host origin is dangerous!
+
+Type: `string[]`
+
+---
+
+For more information on WebdriverIO see the [homepage](https://webdriver.io).
