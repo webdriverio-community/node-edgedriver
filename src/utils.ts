@@ -27,7 +27,7 @@ export function findByArchitecture(name: string) {
     ? 'win'
     : os.platform() === 'darwin'
       ? 'mac'
-      : 'arm' // linux
+      : 'linux'
   return name.split('.')[0].toLocaleLowerCase().endsWith(`_${platformIdentifier}${arch}`)
 }
 
