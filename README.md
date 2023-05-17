@@ -27,7 +27,7 @@ To get a list of available CLI options run `npx edgedriver --help`. By default t
 
 ```sh
 $ npm i edgedriver
-$ EDGEDRIVER_VERSION=105.0.1343.33 ./bin/edgedriver.js --version
+$ EDGEDRIVER_VERSION=105.0.1343.33 npx edgedriver --version
 Microsoft Edge WebDriver 105.0.1343.33 (4122bb4646b33f33bca5d269490b9caadfc452b2)
 ```
 
