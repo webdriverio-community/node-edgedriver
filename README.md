@@ -1,4 +1,4 @@
-EdgeDriver [![CI](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/ci.yml/badge.svg)](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/ci.yml)
+EdgeDriver [![CI](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/ci.yml/badge.svg)](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/ci.yml) [![Audit](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/audit.yml/badge.svg)](https://github.com/webdriverio-community/node-edgedriver/actions/workflows/audit.yml)
 ==========
 
 An NPM wrapper for Microsofts' [EdgeDriver](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/). It manages to download various (or the latest) Edgedriver versions and provides a programmatic interface to start and stop it within Node.js. __Note:__ this is a wrapper module. If you discover any bugs with EdgeDriver, please report them in the [official repository](https://github.com/MicrosoftEdge/EdgeWebDriver).
