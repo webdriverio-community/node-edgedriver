@@ -10,12 +10,14 @@ import type { EdgedriverParameters } from 'types.js'
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
 export async function start (params: EdgedriverParameters) {
-  await download(params.edgeDriverVersion)
+  if (!params.customEdgeDriverPath) {
+    await download(params.edgeDriverVersion)
+  }
   const targetDir = path.resolve(__dirname, '..', '.bin')
-  const binaryFilePath = path.resolve(targetDir, BINARY_FILE)
+  const binaryFilePath = params.customEdgeDriverPath || path.resolve(targetDir, BINARY_FILE)
 
   if (!(await hasAccess(binaryFilePath))) {
-    throw new Error('Failed to download Edgedriver')
+    throw new Error('Failed to access EdgeDriver, was it installed successfully?')
   }
 
   return cp.spawn(binaryFilePath, parseParams(params))

@@ -13,6 +13,10 @@ export interface EdgedriverParameters {
    */
   edgeDriverVersion?: string
   /**
+   * Don't download Edgedriver, instead use a custom path to it, e.g. a cached binary.
+   */
+  customEdgeDriverPath?: string
+  /**
    * port to listen on
    */
   port?: number
