@@ -8,6 +8,7 @@
 import os from 'node:os'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
+
 import { getEdgePath } from 'edge-paths'
 import { canAccess } from '@wdio/utils'
 
