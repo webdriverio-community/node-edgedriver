@@ -33,7 +33,19 @@ Microsoft Edge WebDriver 105.0.1343.33 (4122bb4646b33f33bca5d269490b9caadfc452b2
 
 # Programmatic Interface
 
-You can import this package with Node.js and start the driver as part of your script and use it e.g. with [WebdriverIO](https://webdriver.io):
+You can import this package with Node.js and start the driver as part of your script and use it e.g. with [WebdriverIO](https://webdriver.io).
+
+## Exported Methods
+
+The package exports a `start` and `download` method.
+
+### `start`
+
+Starts an EdgeDriver instance and returns a [`ChildProcess`](https://nodejs.org/api/child_process.html#class-childprocess). If EdgeDriver is not downloaded it will download it for you.
+
+__Params:__ `EdgedriverParameters` - options to pass into EdgeDriver (see below)
+
+__Example:__
 
 ```js
 import { start } from 'edgedriver';
@@ -64,6 +76,12 @@ cp.kill();
 ```
 
 __Note:__ as you can see in the example above this package does not wait for the driver to be up, you have to manage this yourself through packages like [`wait-on`](https://github.com/jeffbski/wait-on).
+
+### `download`
+
+Method to download an EdgeDriver with a particular version. If version parameter is omitted it tries to detect the version based on the Edge browser installed on the system.
+
+__Params:__ `string` - version of Edgedriver to download (optional)
 
 ## CJS Support
 
