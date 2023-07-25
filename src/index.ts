@@ -17,7 +17,10 @@ export async function start (params: EdgedriverParameters) {
 
   params.allowedOrigins = params.allowedOrigins || DEFAULT_ALLOWED_ORIGINS
   params.allowedIps = params.allowedIps || DEFAULT_ALLOWED_IPS
-  return cp.spawn(binaryFilePath, parseParams(params))
+
+  const args = parseParams(params)
+  console.log(`Starting EdgeDriver with params: ${args.join(' ')}`)
+  return cp.spawn(binaryFilePath, args)
 }
 
 export const download = downloadDriver
