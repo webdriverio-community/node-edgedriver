@@ -7,15 +7,12 @@ import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
 import unzipper, { type Entry } from 'unzipper'
-import logger from '@wdio/logger'
 import { transform } from 'camaro'
 
 import findEdgePath from './finder.js'
-import { DOWNLOAD_DIRECTORY, XML_TEMPLATE, BINARY_FILE } from './constants.js'
+import { DOWNLOAD_DIRECTORY, XML_TEMPLATE, BINARY_FILE, log } from './constants.js'
 import { hasAccess, findByArchitecture } from './utils.js'
 import type { EdgeVersion } from './types.js'
-
-const log = logger('edgedriver')
 
 export async function download (
   edgeVersion: string = process.env.EDGEDRIVER_VERSION,

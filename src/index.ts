@@ -2,7 +2,7 @@ import cp from 'node:child_process'
 
 import { download as downloadDriver } from './install.js'
 import { hasAccess, parseParams } from './utils.js'
-import { DEFAULT_ALLOWED_ORIGINS, DEFAULT_ALLOWED_IPS } from './constants.js'
+import { DEFAULT_ALLOWED_ORIGINS, DEFAULT_ALLOWED_IPS, log } from './constants.js'
 import type { EdgedriverParameters } from './types.js'
 
 export async function start (params: EdgedriverParameters) {
@@ -19,7 +19,7 @@ export async function start (params: EdgedriverParameters) {
   params.allowedIps = params.allowedIps || DEFAULT_ALLOWED_IPS
 
   const args = parseParams(params)
-  console.log(`Starting EdgeDriver at ${binaryFilePath} with params: ${args.join(' ')}`)
+  log.info(`Starting EdgeDriver at ${binaryFilePath} with params: ${args.join(' ')}`)
   return cp.spawn(binaryFilePath, args)
 }
 
