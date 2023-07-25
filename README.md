@@ -170,12 +170,21 @@ Type: `string`
 ### allowedIps
 Comma-separated allowlist of remote IP addresses which are allowed to connect to EdgeDriver.
 
-Type: `string[]`
+Type: `string[]`<br />
+Default: `['']`
 
 ### allowedOrigins
 Comma-separated allowlist of request origins which are allowed to connect to EdgeDriver. Using `*` to allow any host origin is dangerous!
 
-Type: `string[]`
+Type: `string[]`<br />
+Default: `['*']`
+
+### cacheDir
+The path to the root of the cache directory.
+
+Type: `string`<br />
+Default: `process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()`
+
 
 ---
 

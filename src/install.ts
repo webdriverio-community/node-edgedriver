@@ -1,4 +1,3 @@
-import url from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'
@@ -16,13 +15,13 @@ import { DOWNLOAD_DIRECTORY, XML_TEMPLATE, BINARY_FILE } from './constants.js'
 import { hasAccess, findByArchitecture } from './utils.js'
 import type { EdgeVersion } from './types.js'
 
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 const log = logger('edgedriver')
 
-export async function download (edgeVersion: string = process.env.EDGEDRIVER_VERSION) {
-  const targetDir = path.resolve(__dirname, '..', '.bin')
-  const binaryFilePath = path.resolve(targetDir, BINARY_FILE)
-
+export async function download (
+  edgeVersion: string = process.env.EDGEDRIVER_VERSION,
+  cacheDir: string = process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()
+) {
+  const binaryFilePath = path.resolve(cacheDir, BINARY_FILE)
   if (await hasAccess(binaryFilePath)) {
     return binaryFilePath
   }
@@ -42,8 +41,8 @@ export async function download (edgeVersion: string = process.env.EDGEDRIVER_VER
     throw new Error(`Failed to download binary (statusCode ${res.status})`)
   }
 
-  await fsp.mkdir(targetDir, { recursive: true })
-  await downloadZip(res.body, targetDir)
+  await fsp.mkdir(cacheDir, { recursive: true })
+  await downloadZip(res.body, cacheDir)
   await fsp.chmod(binaryFilePath, '755')
   return binaryFilePath
 }
@@ -89,7 +88,7 @@ async function fetchVersion (edgeVersion: string) {
   return desiredVersion
 }
 
-function downloadZip(body: NodeJS.ReadableStream, targetDir: string) {
+function downloadZip(body: NodeJS.ReadableStream, cacheDir: string) {
   const stream = Readable.from(body).pipe(unzipper.Parse())
   const promiseChain: Promise<string | void>[] = [
     new Promise((resolve, reject) => {
@@ -99,7 +98,7 @@ function downloadZip(body: NodeJS.ReadableStream, targetDir: string) {
   ]
 
   stream.on('entry', async (entry: Entry) => {
-    const unzippedFilePath = path.join(targetDir, entry.path)
+    const unzippedFilePath = path.join(cacheDir, entry.path)
     if (entry.type === 'Directory') {
       return
     }

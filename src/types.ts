@@ -72,4 +72,9 @@ export interface EdgedriverParameters {
    * comma-separated allowlist of request origins which are allowed to connect to msedgedriver. Using `*` to allow any host origin is dangerous!
    */
   allowedOrigins?: string[]
+  /**
+   * The path to the root of the cache directory.
+   * @default process.env.GECKODRIVER_CACHE_DIR || os.tmpdir()
+   */
+  cacheDir?: string
 }

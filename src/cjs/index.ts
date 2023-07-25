@@ -3,9 +3,9 @@ async function start (params: unknown) {
   return esmPkg.start(params)
 }
 
-async function download (params?: string) {
+async function download (edgeVersion?: string, cacheDir?: string) {
   const esmPkg = await import('../index.js')
-  return esmPkg.download(params)
+  return esmPkg.download(edgeVersion, cacheDir)
 }
 
 exports.start = start
