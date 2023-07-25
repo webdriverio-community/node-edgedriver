@@ -6,19 +6,20 @@ import { DEFAULT_ALLOWED_ORIGINS, DEFAULT_ALLOWED_IPS, log } from './constants.j
 import type { EdgedriverParameters } from './types.js'
 
 export async function start (params: EdgedriverParameters) {
+  const { cacheDir, ...startArgs } = params
   let binaryFilePath = params.customEdgeDriverPath
   if (!binaryFilePath) {
-    binaryFilePath = await downloadDriver(params.edgeDriverVersion, params.cacheDir)
+    binaryFilePath = await downloadDriver(params.edgeDriverVersion, cacheDir)
   }
 
   if (!(await hasAccess(binaryFilePath))) {
     throw new Error('Failed to access EdgeDriver, was it installed successfully?')
   }
 
-  params.allowedOrigins = params.allowedOrigins || DEFAULT_ALLOWED_ORIGINS
-  params.allowedIps = params.allowedIps || DEFAULT_ALLOWED_IPS
+  startArgs.allowedOrigins = startArgs.allowedOrigins || DEFAULT_ALLOWED_ORIGINS
+  startArgs.allowedIps = startArgs.allowedIps || DEFAULT_ALLOWED_IPS
 
-  const args = parseParams(params)
+  const args = parseParams(startArgs)
   log.info(`Starting EdgeDriver at ${binaryFilePath} with params: ${args.join(' ')}`)
   return cp.spawn(binaryFilePath, args)
 }
