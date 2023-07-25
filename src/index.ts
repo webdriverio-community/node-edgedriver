@@ -19,7 +19,7 @@ export async function start (params: EdgedriverParameters) {
   params.allowedIps = params.allowedIps || DEFAULT_ALLOWED_IPS
 
   const args = parseParams(params)
-  console.log(`Starting EdgeDriver with params: ${args.join(' ')}`)
+  console.log(`Starting EdgeDriver at ${binaryFilePath} with params: ${args.join(' ')}`)
   return cp.spawn(binaryFilePath, args)
 }
 
