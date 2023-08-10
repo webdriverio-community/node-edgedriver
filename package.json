@@ -32,7 +32,7 @@
     ]
   },
   "bin": {
-    "edgedriver": "./bin/edgedriver"
+    "edgedriver": "./bin/edgedriver.js"
   },
   "scripts": {
     "build": "tsc -b .",
