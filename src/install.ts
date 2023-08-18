@@ -11,7 +11,7 @@ import { transform } from 'camaro'
 
 import findEdgePath from './finder.js'
 import { DOWNLOAD_DIRECTORY, XML_TEMPLATE, BINARY_FILE, log } from './constants.js'
-import { hasAccess, findByArchitecture } from './utils.js'
+import { hasAccess, findByArchitecture, sleep } from './utils.js'
 import type { EdgeVersion } from './types.js'
 
 export async function download (
@@ -41,6 +41,8 @@ export async function download (
   await fsp.mkdir(cacheDir, { recursive: true })
   await downloadZip(res.body, cacheDir)
   await fsp.chmod(binaryFilePath, '755')
+  log.info('Finished downloading Edgedriver')
+  await sleep() // wait for file to be accessible, avoid ETXTBSY errors
   return binaryFilePath
 }
 

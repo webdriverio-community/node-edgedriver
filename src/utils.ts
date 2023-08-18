@@ -106,3 +106,7 @@ export function hasAccessSync(filePath: string) {
 export async function hasAccess(filePath: string) {
   return fsp.access(filePath).then(() => true, () => false)
 }
+
+export function sleep (ms = 100) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
