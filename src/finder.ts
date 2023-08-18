@@ -10,9 +10,8 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 
 import { getEdgePath } from 'edge-paths'
-import { canAccess } from '@wdio/utils'
 
-import { sort, findByWhich } from './utils.js'
+import { sort, findByWhich, hasAccessSync } from './utils.js'
 
 interface ApplicationDataType {
   SPApplicationsDataType: {
@@ -36,7 +35,7 @@ const darwinGetInstallations = (appPaths: string[], suffixes: string[]) => {
   appPaths.forEach((inst) => {
     suffixes.forEach(suffix => {
       const execPath = path.join(inst.substring(0, inst.indexOf('.app') + 4).trim(), suffix)
-      if (canAccess(execPath) && installations.indexOf(execPath) === -1) {
+      if (hasAccessSync(execPath) && installations.indexOf(execPath) === -1) {
         installations.push(execPath)
       }
     })
@@ -57,7 +56,7 @@ function darwin() {
   const defaultPath = `/Applications/${appName}.app${suffixes[0]}`
 
   let installations
-  if (canAccess(defaultPath)) {
+  if (hasAccessSync(defaultPath)) {
     installations = [defaultPath]
   } else {
     const appPaths = darwinGetAppPaths(appName)
@@ -119,7 +118,7 @@ function win32() {
   prefixes.forEach(prefix => suffixes.forEach(suffix => {
     const edgePath = path.join(prefix, suffix)
     checkedPath.push(edgePath)
-    if (canAccess(edgePath)) {
+    if (hasAccessSync(edgePath)) {
       installations.push(edgePath)
     }
   }))
@@ -129,7 +128,7 @@ function win32() {
    */
   if (installations.length === 0) {
     const edgePath = getEdgePath()
-    if (canAccess(edgePath)) {
+    if (hasAccessSync(edgePath)) {
       installations.push(edgePath)
     }
   }
@@ -142,7 +141,7 @@ function findEdgeExecutables(folder: string) {
   const edgeExecRegex = '^Exec=/.*/(edge)-.*'
 
   const installations: string[] = []
-  if (canAccess(folder)) {
+  if (hasAccessSync(folder)) {
     let execPaths
 
     // Some systems do not support grep -R so fallback to -r.
@@ -158,7 +157,7 @@ function findEdgeExecutables(folder: string) {
     execPaths = execPaths.toString().split(newLineRegex).map(
       (execPath) => execPath.replace(argumentsRegex, '$1'))
 
-    execPaths.forEach((execPath) => canAccess(execPath) && installations.push(execPath))
+    execPaths.forEach((execPath) => hasAccessSync(execPath) && installations.push(execPath))
   }
 
   return installations

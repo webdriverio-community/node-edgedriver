@@ -1,5 +1,6 @@
 import os from 'node:os'
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
+import fsp from 'node:fs/promises'
 
 import which from 'which'
 import decamelize from 'decamelize'
@@ -9,10 +10,6 @@ import type { EdgedriverParameters } from './types.js'
 interface Priorities {
   regex: RegExp
   weight: number
-}
-
-export async function hasAccess(filePath: string) {
-  return fs.access(filePath).then(() => true, () => false)
 }
 
 export function findByArchitecture(name: string) {
@@ -28,7 +25,7 @@ export function findByArchitecture(name: string) {
 }
 
 const EXCLUDED_PARAMS = ['version', 'help']
-export function parseParams (params: EdgedriverParameters) {
+export function parseParams(params: EdgedriverParameters) {
   return Object.entries(params)
     .filter(([key,]) => !EXCLUDED_PARAMS.includes(key))
     .map(([key, val]) => {
@@ -87,4 +84,25 @@ export function findByWhich(executables: string[], priorities: Priorities[]) {
   })
 
   return sort(uniq(installations.filter(Boolean)), priorities)
+}
+
+/**
+ * Helper utility to check file access
+ * @param {string} file file to check access for
+ * @return              true if file can be accessed
+ */
+export function hasAccessSync(filePath: string) {
+  if (!filePath) {
+    return false
+  }
+  try {
+    fs.accessSync(filePath)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+export async function hasAccess(filePath: string) {
+  return fsp.access(filePath).then(() => true, () => false)
 }
