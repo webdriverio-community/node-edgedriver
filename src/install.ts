@@ -3,16 +3,15 @@ import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import cp from 'node:child_process'
+import { format } from 'node:util'
 import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
 import unzipper, { type Entry } from 'unzipper'
-import { transform } from 'camaro'
 
 import findEdgePath from './finder.js'
-import { DOWNLOAD_DIRECTORY, XML_TEMPLATE, BINARY_FILE, log } from './constants.js'
-import { hasAccess, findByArchitecture, sleep } from './utils.js'
-import type { EdgeVersion } from './types.js'
+import { TAGGED_VERSIONS, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
+import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
 
 export async function download (
   edgeVersion: string = process.env.EDGEDRIVER_VERSION,
@@ -31,8 +30,9 @@ export async function download (
   }
 
   const version = await fetchVersion(edgeVersion)
-  log.info(`Downloading Edgedriver from ${version.url}`)
-  const res = await fetch(version.url)
+  const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+  log.info(`Downloading Edgedriver from ${downloadUrl}`)
+  const res = await fetch(downloadUrl)
 
   if (!res.body) {
     throw new Error(`Failed to download binary (statusCode ${res.status})`)
@@ -69,22 +69,36 @@ async function getEdgeVersionUnix (edgePath: string) {
   return versionOutput.trim().split(' ').pop()
 }
 
-async function fetchVersion (edgeVersion: string) {
-  const res = await fetch(DOWNLOAD_DIRECTORY)
-  const xml = await res.text()
-  const versions: EdgeVersion[] = (await transform(xml, XML_TEMPLATE)).map(({ name: xmlName, lastModified, url }: { name: string, lastModified: string, url: string }) => {
-    const [version, name] = xmlName.split('/')
-    return { name, version, url, lastModified }
-  })
-
-  const uniqueVersions = [...new Set(versions.map((v) => v.version))]
-  const versionsSorted = uniqueVersions.sort((a, b) => a.localeCompare(b, undefined, { numeric:true })).reverse().map((v) => versions.filter((vv) => vv.version === v)).flat()
-  const desiredVersion = versionsSorted.find((v) => v.version === edgeVersion && findByArchitecture(v.name))
-  if (!desiredVersion) {
-    throw new Error(`No version "${edgeVersion}" found, latest versions available are ${versionsSorted.map((v) => v.version).slice(0, 10).join(', ')}`)
+export async function fetchVersion (edgeVersion: string) {
+  /**
+   * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
+   */
+  if (edgeVersion.split('.').length === 4) {
+    return edgeVersion
   }
 
-  return desiredVersion
+  /**
+   * if browser version is a tagged version, e.g. stable, beta, dev, canary
+   */
+  if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
+    const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()))
+    return (await res.text()).replace(/\0/g, '').slice(2).trim()
+  }
+
+  /**
+   * check for a number in the version and check for that
+   */
+  const MATCH_VERSION = /\d+/g
+  if (edgeVersion.match(MATCH_VERSION)) {
+    const [major] = edgeVersion.match(MATCH_VERSION)
+    const p = os.platform()
+    const arch = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
+    const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), arch.toUpperCase())
+    const res = await fetch(url)
+    return (await res.text()).replace(/\0/g, '').slice(2).trim()
+  }
+
+  throw new Error(`Couldn't detect version for ${edgeVersion}`)
 }
 
 function downloadZip(body: NodeJS.ReadableStream, cacheDir: string) {

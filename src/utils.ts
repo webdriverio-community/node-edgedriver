@@ -12,16 +12,16 @@ interface Priorities {
   weight: number
 }
 
-export function findByArchitecture(name: string) {
-  const arch = ['arm64', 'ppc64', 'x64', 's390x'].includes(os.arch())
-    ? '64' + (os.platform() === 'darwin' && os.arch() === 'arm64' ? '_m1' : '')
-    : '32'
+export function getNameByArchitecture() {
   const platformIdentifier = os.platform() === 'win32'
     ? 'win'
     : os.platform() === 'darwin'
       ? 'mac'
       : 'linux'
-  return name.split('.')[0].toLocaleLowerCase().endsWith(`_${platformIdentifier}${arch}`)
+  const arch = ['arm64', 'ppc64', 'x64', 's390x'].includes(os.arch())
+    ? '64' + (os.platform() === 'darwin' && os.arch() === 'arm64' ? '_m1' : '')
+    : '32'
+  return `edgedriver_${platformIdentifier}${arch}`
 }
 
 const EXCLUDED_PARAMS = ['version', 'help']

@@ -1,7 +1,8 @@
 import os from 'node:os'
 import { vi, test, expect } from 'vitest'
 
-import { findByArchitecture, parseParams } from '../src/utils.js'
+import { fetchVersion } from '../src/install.js'
+import { getNameByArchitecture, parseParams } from '../src/utils.js'
 
 vi.mock('node:os', () => ({
   default: {
@@ -10,25 +11,32 @@ vi.mock('node:os', () => ({
   }
 }))
 
-test('findByArchitecture', () => {
+test('fetchVersion', async () => {
+  expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
+  expect(await fetchVersion('beta')).toBe('116.0.1938.54')
+  expect(await fetchVersion('some114version')).toBe('114.0.1823.82')
+  await expect(fetchVersion('latest-win')).rejects.toThrow()
+})
+
+test('getNameByArchitecture', () => {
   vi.mocked(os.arch).mockReturnValue('arm')
   vi.mocked(os.platform).mockReturnValue('linux')
-  expect(findByArchitecture('edgedriver_linux32.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_linux32')
   vi.mocked(os.arch).mockReturnValue('arm64')
   vi.mocked(os.platform).mockReturnValue('linux')
-  expect(findByArchitecture('edgedriver_linux64.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_linux64')
   vi.mocked(os.arch).mockReturnValue('arm')
   vi.mocked(os.platform).mockReturnValue('win32')
-  expect(findByArchitecture('edgedriver_win32.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_win32')
   vi.mocked(os.arch).mockReturnValue('arm64')
   vi.mocked(os.platform).mockReturnValue('win32')
-  expect(findByArchitecture('edgedriver_win64.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_win64')
   vi.mocked(os.arch).mockReturnValue('x64')
   vi.mocked(os.platform).mockReturnValue('darwin')
-  expect(findByArchitecture('edgedriver_mac64.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_mac64')
   vi.mocked(os.arch).mockReturnValue('arm64')
   vi.mocked(os.platform).mockReturnValue('darwin')
-  expect(findByArchitecture('edgedriver_mac64_m1.zip')).toBe(true)
+  expect(getNameByArchitecture()).toBe('edgedriver_mac64_m1')
 })
 
 test('parseParams', () => {

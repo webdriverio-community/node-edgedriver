@@ -65,7 +65,6 @@
   },
   "dependencies": {
     "@wdio/logger": "^8.11.0",
-    "camaro": "^6.2.0",
     "decamelize": "^6.0.0",
     "edge-paths": "^3.0.5",
     "node-fetch": "^3.3.2",

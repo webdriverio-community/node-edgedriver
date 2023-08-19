@@ -1,10 +1,3 @@
-export interface EdgeVersion {
-  name: string
-  version: string
-  lastModified: string
-  url: string
-}
-
 export type LogLevel = 'ALL' | 'DEBUG' | 'INFO' | 'WARNING' | 'SEVERE' | 'OFF'
 
 export interface EdgedriverParameters {
