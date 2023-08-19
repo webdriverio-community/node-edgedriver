@@ -9,7 +9,7 @@ const cp = await start({ port })
 try {
   await waitPort({ port: 4444 })
   const browser = await remote({
-    automationProtocol: 'webdriver',
+    port,
     capabilities: {
       browserName: 'msedge',
       'ms:edgeOptions': {
