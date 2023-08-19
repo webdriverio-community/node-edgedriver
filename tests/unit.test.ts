@@ -1,6 +1,7 @@
 import os from 'node:os'
 import { vi, test, expect } from 'vitest'
 
+import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
 import { getNameByArchitecture, parseParams } from '../src/utils.js'
 
@@ -42,4 +43,10 @@ test('getNameByArchitecture', () => {
 test('parseParams', () => {
   expect(parseParams({ baseUrl: 'foobar', silent: true, verbose: false, allowedIps: ['123', '321'] }))
     .toMatchSnapshot()
+})
+
+test('exports', () => {
+  expect(typeof pkgExports.download).toBe('function')
+  expect(typeof pkgExports.findEdgePath).toBe('function')
+  expect(typeof pkgExports.start).toBe('function')
 })

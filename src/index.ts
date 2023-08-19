@@ -1,5 +1,6 @@
 import cp from 'node:child_process'
 
+import find from './finder.js'
 import { download as downloadDriver } from './install.js'
 import { hasAccess, parseParams } from './utils.js'
 import { DEFAULT_ALLOWED_ORIGINS, DEFAULT_ALLOWED_IPS, log } from './constants.js'
@@ -25,4 +26,5 @@ export async function start (params: EdgedriverParameters) {
 }
 
 export const download = downloadDriver
+export const findEdgePath = find
 export * from './types.js'
