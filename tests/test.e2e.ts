@@ -12,9 +12,9 @@ try {
     port,
     capabilities: {
       browserName: 'msedge',
-      'ms:edgeOptions': {
-        args: ['--headless']
-      }
+      // 'ms:edgeOptions': {
+      // args: ['--headless']
+      // }
     }
   })
   await browser.url('https://webdriver.io')
