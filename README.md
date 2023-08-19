@@ -37,7 +37,7 @@ You can import this package with Node.js and start the driver as part of your sc
 
 ## Exported Methods
 
-The package exports a `start` and `download` method.
+The package exports a `start`, `findEdgePath` and `download` method.
 
 ### `start`
 
@@ -82,6 +82,13 @@ __Note:__ as you can see in the example above this package does not wait for the
 Method to download an EdgeDriver with a particular version. If version parameter is omitted it tries to detect the version based on the Edge browser installed on the system.
 
 __Params:__ `string` - version of Edgedriver to download (optional)
+__Returns:__ `string` - path to Edgedriver binary
+
+### `findEdgePath`
+
+The `findEdgePath` is a helper method to find the Microsoft Egde binary on given system.
+
+__Returns:__ `string` - path to Microsoft Edge binary
 
 ## CJS Support
 
