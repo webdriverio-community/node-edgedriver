@@ -92,13 +92,28 @@ const { start } = require('edgedriver')
 // see example above
 ```
 
+## Custom CDN URL
+
+This allows you to use your own endpoints for downloading Edgedriver binaries. It is useful in air gapped scenarios or if you have download restrictions, such as firewalls. You can either set an environment variable:
+
+```sh
+$ npm i edgedriver
+$ EDGEDRIVER_CDNURL=https://msedgedriver.azureedge.net npx edgedriver --version
+```
+
+or create a [`.npmrc`](https://docs.npmjs.com/cli/configuring-npm/npmrc) with the following content:
+
+```toml
+edgedriver_cdnurl=https://msedgedriver.azureedge.net
+```
+
 ## Options
 
 The `start` method offers the following options to be passed on to the actual Edgedriver CLI.
 
 ### edgeDriverVersion
 
-The version of EdgeDriver to start. See https://msedgedriver.azureedge.net/ for all available versions, platforms and architecture.
+The version of EdgeDriver to start. See [Egdedriver directory list](https://msedgewebdriverstorage.z22.web.core.windows.net/) for all available versions, platforms and architecture.
 
 Type: `number`<br />
 Default: `latest`
@@ -184,7 +199,6 @@ The path to the root of the cache directory.
 
 Type: `string`<br />
 Default: `process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()`
-
 
 ---
 

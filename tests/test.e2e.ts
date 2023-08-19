@@ -1,6 +1,7 @@
 import waitPort from 'wait-port'
 import { remote } from 'webdriverio'
 
+import findEdgePath from '../dist/finder.js'
 import { start } from '../dist/index.js'
 
 const port = 4444
@@ -12,6 +13,9 @@ try {
     port,
     capabilities: {
       browserName: 'MicrosoftEdge',
+      'ms:edgeOptions': {
+        binary: findEdgePath()
+      }
     }
   })
   await browser.url('https://webdriver.io')
