@@ -11,10 +11,7 @@ try {
   const browser = await remote({
     port,
     capabilities: {
-      browserName: 'msedge',
-      // 'ms:edgeOptions': {
-      // args: ['--headless']
-      // }
+      browserName: 'MicrosoftEdge',
     }
   })
   await browser.url('https://webdriver.io')
