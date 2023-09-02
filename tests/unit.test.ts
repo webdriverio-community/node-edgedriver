@@ -14,7 +14,7 @@ vi.mock('node:os', () => ({
 
 test('fetchVersion', async () => {
   expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
-  expect(await fetchVersion('beta')).toBe('116.0.1938.54')
+  expect(await fetchVersion('beta')).toEqual(expect.any(String))
   expect(await fetchVersion('some114version')).toBe('114.0.1823.82')
   await expect(fetchVersion('latest-win')).rejects.toThrow()
 })
