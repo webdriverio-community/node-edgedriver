@@ -7,8 +7,8 @@ import { DEFAULT_ALLOWED_ORIGINS, DEFAULT_ALLOWED_IPS, log } from './constants.j
 import type { EdgedriverParameters } from './types.js'
 
 export async function start (params: EdgedriverParameters) {
-  const { cacheDir, ...startArgs } = params
-  let binaryFilePath = params.customEdgeDriverPath
+  const { cacheDir, customEdgeDriverPath, ...startArgs } = params
+  let binaryFilePath = customEdgeDriverPath
   if (!binaryFilePath) {
     binaryFilePath = await downloadDriver(params.edgeDriverVersion, cacheDir)
   }

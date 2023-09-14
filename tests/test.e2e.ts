@@ -2,10 +2,13 @@ import waitPort from 'wait-port'
 import { remote } from 'webdriverio'
 
 import findEdgePath from '../dist/finder.js'
-import { start } from '../dist/index.js'
+import { start, download } from '../dist/index.js'
 
 const port = 4444
 const cp = await start({ port })
+
+// start edgedriver manually
+console.log('= start edgedriver manually')
 
 try {
   await waitPort({ port: 4444 })
@@ -25,4 +28,28 @@ try {
   process.exit(1)
 } finally {
   cp.kill()
+}
+
+// start specific edgedriver
+console.log('= start specific edgedriver =')
+const binary = await download()
+
+try {
+  const browser = await remote({
+    automationProtocol: 'webdriver',
+    capabilities: {
+      browserName: 'edge',
+      'moz:firefoxOptions': {
+        args: ['-headless']
+      },
+      'wdio:edgedriverOptions': {
+        binary
+      }
+    }
+  })
+  await browser.url('https://webdriver.io')
+  await browser.deleteSession()
+} catch (err) {
+  console.error(err)
+  process.exit(1)
 }
