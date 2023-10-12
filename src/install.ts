@@ -24,6 +24,10 @@ export async function download (
 
   if (!edgeVersion) {
     const edgePath = findEdgePath()
+    if (!edgePath) {
+      throw new Error('Could not find Microsoft Edge binary, please make sure the browser is installed on your system.')
+    }
+
     log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
     edgeVersion = os.platform() === 'win32' ? await getEdgeVersionWin(edgePath) : await getEdgeVersionUnix(edgePath)
     log.info(`Detected Microsoft Edge v${edgeVersion}`)
