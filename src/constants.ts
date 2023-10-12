@@ -1,5 +1,5 @@
 import os from 'node:os'
-import logger from '@wdio/logger'
+import logger, { type Logger } from '@wdio/logger'
 
 export const TAGGED_VERSIONS = ['stable', 'beta', 'dev', 'canary']
 export const BASE_CDN_URL = (
@@ -13,4 +13,4 @@ export const LATEST_RELEASE_URL = `${BASE_CDN_URL}/LATEST_RELEASE_%s_%s`
 export const BINARY_FILE = 'msedgedriver' + (os.platform() === 'win32' ? '.exe' : '')
 export const DEFAULT_ALLOWED_ORIGINS = ['*']
 export const DEFAULT_ALLOWED_IPS = ['']
-export const log = logger('edgedriver')
+export const log: Logger = logger('edgedriver')
