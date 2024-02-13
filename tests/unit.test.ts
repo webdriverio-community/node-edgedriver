@@ -4,6 +4,7 @@ import { vi, test, expect } from 'vitest'
 import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
 import { getNameByArchitecture, parseParams } from '../src/utils.js'
+import { EDGE_PRODUCTS_API } from '../src/constants.js'
 
 vi.mock('node:os', () => ({
   default: {
@@ -12,11 +13,50 @@ vi.mock('node:os', () => ({
   }
 }))
 
+vi.mock('node-fetch', async (orig) => {
+  const origFetch: any = await orig()
+  const apiResponse = await import('./__fixtures__/api.json', { assert: { type: 'json' } })
+  return {
+    default: vi.fn(async (url) => {
+      if (url === EDGE_PRODUCTS_API) {
+        return {
+          json: vi.fn().mockResolvedValue(apiResponse.default)
+        }
+      } else if (!url.includes('LATEST_RELEASE')) {
+        return {
+          text: vi.fn().mockResolvedValue('��123.456.789.0')
+        }
+      }
+
+      return origFetch.default(url)
+    })
+  }
+})
+
 test('fetchVersion', async () => {
   expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
-  expect(await fetchVersion('beta')).toEqual(expect.any(String))
+  expect(await fetchVersion('beta')).toBe('122.0.2365.30')
   expect(await fetchVersion('some114version')).toBe('114.0.1823.82')
   await expect(fetchVersion('latest-win')).rejects.toThrow()
+  vi.mocked(os.arch).mockReturnValue('arm')
+  vi.mocked(os.platform).mockReturnValue('linux')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.113')
+  vi.mocked(os.arch).mockReturnValue('arm64')
+  vi.mocked(os.platform).mockReturnValue('linux')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.113')
+  vi.mocked(os.arch).mockReturnValue('arm')
+  vi.mocked(os.platform).mockReturnValue('win32')
+  expect(await fetchVersion('stable')).toBe('123.456.789.0')
+  vi.mocked(os.arch).mockReturnValue('arm64')
+  vi.mocked(os.platform).mockReturnValue('win32')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+  vi.mocked(os.arch).mockReturnValue('x64')
+  vi.mocked(os.platform).mockReturnValue('darwin')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+  vi.mocked(os.arch).mockReturnValue('arm64')
+  vi.mocked(os.platform).mockReturnValue('darwin')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+
 })
 
 test('getNameByArchitecture', () => {

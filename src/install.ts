@@ -10,8 +10,17 @@ import fetch from 'node-fetch'
 import unzipper, { type Entry } from 'unzipper'
 
 import findEdgePath from './finder.js'
-import { TAGGED_VERSIONS, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
+import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
 import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
+
+interface ProductAPIResponse {
+  Product: string
+  Releases: {
+    Platform: string
+    Architecture: string
+    ProductVersion: string
+  }[]
+}
 
 export async function download (
   edgeVersion: string = process.env.EDGEDRIVER_VERSION,
@@ -74,6 +83,9 @@ async function getEdgeVersionUnix (edgePath: string) {
 }
 
 export async function fetchVersion (edgeVersion: string) {
+  const p = os.platform()
+  const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
+
   /**
    * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
    */
@@ -85,6 +97,31 @@ export async function fetchVersion (edgeVersion: string) {
    * if browser version is a tagged version, e.g. stable, beta, dev, canary
    */
   if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
+    const apiResponse = await fetch(EDGE_PRODUCTS_API).catch((err) => {
+      log.error(`Couldn't fetch version from ${EDGE_PRODUCTS_API}: ${err.stack}`)
+      return { json: async () => [] as ProductAPIResponse[] }
+    })
+    const products = await apiResponse.json() as ProductAPIResponse[]
+    const product = products.find((p) => p.Product.toLowerCase() === edgeVersion.toLowerCase())
+    const productVersion = product?.Releases.find((r) => (
+      /**
+       * On Mac we all product versions are universal to its architecture
+       */
+      (platform === 'mac' && r.Platform === 'MacOS') ||
+      /**
+       * On Windows we need to check for the architecture
+       */
+      (platform === 'win' && r.Platform === 'Windows' && os.arch() === r.Architecture) ||
+      /**
+       * On Linux we only have one architecture
+       */
+      (platform === 'linux' && r.Platform === 'Linux')
+    ))?.ProductVersion
+
+    if (productVersion) {
+      return productVersion
+    }
+
     const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()))
     return (await res.text()).replace(/\0/g, '').slice(2).trim()
   }
@@ -95,9 +132,7 @@ export async function fetchVersion (edgeVersion: string) {
   const MATCH_VERSION = /\d+/g
   if (edgeVersion.match(MATCH_VERSION)) {
     const [major] = edgeVersion.match(MATCH_VERSION)
-    const p = os.platform()
-    const arch = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
-    const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), arch.toUpperCase())
+    const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), platform.toUpperCase())
     const res = await fetch(url)
     return (await res.text()).replace(/\0/g, '').slice(2).trim()
   }
