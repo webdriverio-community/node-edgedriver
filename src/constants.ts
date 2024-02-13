@@ -8,6 +8,7 @@ export const BASE_CDN_URL = (
   'https://msedgedriver.azureedge.net'
 )
 export const DOWNLOAD_URL = `${BASE_CDN_URL}/%s/%s.zip`
+export const EDGE_PRODUCTS_API = 'https://edgeupdates.microsoft.com/api/products'
 export const TAGGED_VERSION_URL = `${BASE_CDN_URL}/LATEST_%s`
 export const LATEST_RELEASE_URL = `${BASE_CDN_URL}/LATEST_RELEASE_%s_%s`
 export const BINARY_FILE = 'msedgedriver' + (os.platform() === 'win32' ? '.exe' : '')
