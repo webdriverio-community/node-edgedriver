@@ -8,7 +8,7 @@ import type { EdgedriverParameters } from './types.js'
 
 export async function start (params: EdgedriverParameters) {
   const { cacheDir, customEdgeDriverPath, ...startArgs } = params
-  let binaryFilePath = customEdgeDriverPath
+  let binaryFilePath = customEdgeDriverPath || process.env.EDGEDRIVER_PATH
   if (!binaryFilePath) {
     binaryFilePath = await downloadDriver(params.edgeDriverVersion, cacheDir)
   }

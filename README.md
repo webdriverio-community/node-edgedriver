@@ -210,7 +210,8 @@ Default: `process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()`
 ### customEdgeDriverPath
 Don't download EdgeDriver, instead use a custom path to it, e.g. a cached binary.
 
-Type: `string`
+Type: `string`<br />
+Default: `process.env.EDGEDRIVER_PATH`
 
 ---
 

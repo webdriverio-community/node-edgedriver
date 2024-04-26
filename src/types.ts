@@ -7,6 +7,7 @@ export interface EdgedriverParameters {
   edgeDriverVersion?: string
   /**
    * Don't download Edgedriver, instead use a custom path to it, e.g. a cached binary.
+   * @default process.env.EDGEDRIVER_PATH
    */
   customEdgeDriverPath?: string
   /**
