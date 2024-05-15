@@ -16,15 +16,25 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
+
       - name: 💚 Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
+
       - name: 🚧 Install Dependencies
         run: npm ci
+
       - name: 📦 Build
         run: npm run build
+
+      - name: 🔧 Install Edge
+        id: edge
+        uses: browser-actions/setup-edge@v1
+
       - name: 🧪 Run Tests
         uses: GabrielBB/xvfb-action@v1
+        env:
+          EDGE_BINARY_PATH: ${{ steps.edge.outputs.edge-path }}
         with:
           run: npm test

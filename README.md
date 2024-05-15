@@ -86,7 +86,7 @@ __Returns:__ `string` - path to Edgedriver binary
 
 ### `findEdgePath`
 
-The `findEdgePath` is a helper method to find the Microsoft Egde binary on given system.
+The `findEdgePath` is a helper method to find the Microsoft Egde binary on given system. If there is a `EDGE_BINARY_PATH` environment set, it will return that value.
 
 __Returns:__ `string` - path to Microsoft Edge binary
 

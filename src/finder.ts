@@ -164,6 +164,14 @@ function findEdgeExecutables(folder: string) {
 }
 
 export default () => {
+  /**
+   * Check for the EDGE_BINARY_PATH env variable
+   */
+  const binaryPathEnv = process.env.EDGE_BINARY_PATH
+  if (typeof binaryPathEnv === 'string' && binaryPathEnv) {
+    return process.env.EDGE_BINARY_PATH
+  }
+
   if (os.platform() === 'win32') {
     return win32()[0]
   }
