@@ -18,7 +18,7 @@ try {
       browserName: 'MicrosoftEdge',
       'ms:edgeOptions': {
         binary: findEdgePath(),
-        args: ['--no-sandbox']
+        args: ['no-sandbox']
       }
     }
   })
