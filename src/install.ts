@@ -72,19 +72,34 @@ async function getEdgeVersionWin (edgePath: string) {
 async function getEdgeVersionUnix (edgePath: string) {
   log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
   const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
-    console.log(111, err, stdout, stderr)
-
     if (err) {
       return reject(err)
     }
     if (stderr) {
       return reject(new Error(stderr))
     }
-    console.log('RESOVE', stdout)
     return resolve(stdout)
   }))
-  console.log('RETURN', versionOutput.trim().split(' ').pop())
-  return versionOutput.trim().split(' ').pop()
+  /**
+   * example output: "Microsoft Edge 124.0.2478.105 unknown"
+   */
+  return versionOutput
+    /**
+     * trim the output
+     */
+    .trim()
+    /**
+     * split by space, e.g. `[Microsoft, Edge, 124.0.2478.105, unknown]
+     */
+    .split(' ')
+    /**
+     * filter for entity that matches the version pattern, e.g. `124.0.2478.105`
+     */
+    .filter((v) => v.match(/\d+\.\d+\.\d+\.\d+/g))
+    /**
+     * get the first entity
+     */
+    .pop()
 }
 
 export async function fetchVersion (edgeVersion: string) {
