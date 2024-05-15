@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-13, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -28,13 +28,7 @@ jobs:
       - name: 📦 Build
         run: npm run build
 
-      - name: 🔧 Install Edge
-        id: edge
-        uses: browser-actions/setup-edge@v1
-
       - name: 🧪 Run Tests
         uses: GabrielBB/xvfb-action@v1
-        env:
-          EDGE_BINARY_PATH: ${{ steps.edge.outputs.edge-path }}
         with:
           run: npm test
