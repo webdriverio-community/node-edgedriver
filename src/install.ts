@@ -70,6 +70,7 @@ async function getEdgeVersionWin (edgePath: string) {
 }
 
 async function getEdgeVersionUnix (edgePath: string) {
+  log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
   const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
     if (err) {
       return reject(err)
