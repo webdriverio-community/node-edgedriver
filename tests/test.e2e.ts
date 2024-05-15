@@ -18,7 +18,7 @@ try {
       browserName: 'MicrosoftEdge',
       'ms:edgeOptions': {
         binary: findEdgePath(),
-        args: ['no-sandbox']
+        args: ['no-sandbox', 'headless']
       }
     }
   })
@@ -40,8 +40,8 @@ try {
     automationProtocol: 'webdriver',
     capabilities: {
       browserName: 'edge',
-      'moz:firefoxOptions': {
-        args: ['-headless']
+      'ms:edgeOptions': {
+        args: ['no-sandbox', 'headless']
       },
       'wdio:edgedriverOptions': {
         binary
