@@ -80,8 +80,10 @@ async function getEdgeVersionUnix (edgePath: string) {
     if (stderr) {
       return reject(new Error(stderr))
     }
+    console.log('RESOVE', stdout)
     return resolve(stdout)
   }))
+  console.log('RETURN', versionOutput.trim().split(' ').pop())
   return versionOutput.trim().split(' ').pop()
 }
 
