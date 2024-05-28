@@ -164,7 +164,7 @@ async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: str
   for (const entry of await zip.getEntries()) {
     const unzippedFilePath = path.join(cacheDir, entry.filename)
     if (entry.directory) {
-      return
+      continue
     }
     if (!await hasAccess(path.dirname(unzippedFilePath))) {
       await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
