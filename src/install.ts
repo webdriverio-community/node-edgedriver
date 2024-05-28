@@ -1,13 +1,11 @@
 import path from 'node:path'
-import fs from 'node:fs'
-import fsp from 'node:fs/promises'
+import fsp, { writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import cp from 'node:child_process'
 import { format } from 'node:util'
-import { Readable } from 'node:stream'
 
 import fetch from 'node-fetch'
-import unzipper, { type Entry } from 'unzipper'
+import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
 
 import findEdgePath from './finder.js'
 import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
@@ -52,7 +50,7 @@ export async function download (
   }
 
   await fsp.mkdir(cacheDir, { recursive: true })
-  await downloadZip(res.body, cacheDir)
+  await downloadZip(res, cacheDir)
   await fsp.chmod(binaryFilePath, '755')
   log.info('Finished downloading Edgedriver')
   await sleep() // wait for file to be accessible, avoid ETXTBSY errors
@@ -160,33 +158,20 @@ export async function fetchVersion (edgeVersion: string) {
   throw new Error(`Couldn't detect version for ${edgeVersion}`)
 }
 
-function downloadZip(body: NodeJS.ReadableStream, cacheDir: string) {
-  const stream = Readable.from(body).pipe(unzipper.Parse())
-  const promiseChain: Promise<string | void>[] = [
-    new Promise((resolve, reject) => {
-      stream.on('close', () => resolve())
-      stream.on('error', () => reject())
-    })
-  ]
-
-  stream.on('entry', async (entry: Entry) => {
-    const unzippedFilePath = path.join(cacheDir, entry.path)
-    if (entry.type === 'Directory') {
-      return
+async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: string) {
+  const zipBlob = await res.blob()
+  const zip = new ZipReader(new BlobReader(zipBlob))
+  for (const entry of await zip.getEntries()) {
+    const unzippedFilePath = path.join(cacheDir, entry.filename)
+    if (entry.directory) {
+      continue
     }
-
     if (!await hasAccess(path.dirname(unzippedFilePath))) {
       await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
     }
-
-    const execStream = entry.pipe(fs.createWriteStream(unzippedFilePath))
-    promiseChain.push(new Promise((resolve, reject) => {
-      execStream.on('close', () => resolve(unzippedFilePath))
-      execStream.on('error', reject)
-    }))
-  })
-
-  return Promise.all(promiseChain)
+    const content = await entry.getData<Blob>(new BlobWriter())
+    await writeFile(unzippedFilePath, content.stream())
+  }
 }
 
 /**
