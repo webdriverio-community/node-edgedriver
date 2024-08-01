@@ -21,7 +21,7 @@ interface ProductAPIResponse {
 }
 
 export async function download (
-  edgeVersion: string = process.env.EDGEDRIVER_VERSION,
+  edgeVersion: string = process.env.EDGEDRIVER_VERSION || process.env.EDGEWEBDRIVER,
   cacheDir: string = process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()
 ) {
   const binaryFilePath = path.resolve(cacheDir, BINARY_FILE)
