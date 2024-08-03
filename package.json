@@ -46,28 +46,30 @@
     "watch": "npm run build -- --watch"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^7.9.0",
-    "@typescript-eslint/parser": "^7.9.0",
-    "@vitest/coverage-v8": "^2.0.3",
-    "eslint": "^8.57.0",
-    "eslint-plugin-import": "^2.29.1",
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.8.0",
+    "@types/node": "^22.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "eslint": "^9.8.0",
     "eslint-plugin-unicorn": "^55.0.0",
-    "husky": "^9.0.11",
-    "npm-run-all2": "^6.1.2",
-    "release-it": "^17.2.1",
+    "globals": "^15.9.0",
+    "husky": "^9.1.4",
+    "npm-run-all2": "^6.2.2",
+    "release-it": "^17.6.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "vitest": "^2.0.3",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5",
     "wait-port": "^1.1.0",
-    "webdriverio": "^8.36.1"
+    "webdriverio": "^8.39.1"
   },
   "dependencies": {
-    "@wdio/logger": "^8.28.0",
+    "@wdio/logger": "^8.38.0",
+    "@zip.js/zip.js": "^2.7.48",
     "decamelize": "^6.0.0",
     "edge-paths": "^3.0.5",
     "node-fetch": "^3.3.2",
-    "which": "^4.0.0",
-    "@zip.js/zip.js": "^2.7.44"
+    "which": "^4.0.0"
   }
 }

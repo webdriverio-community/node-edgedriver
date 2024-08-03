@@ -78,7 +78,7 @@ export function findByWhich(executables: string[], priorities: Priorities[]) {
       if (hasAccess(browserPath)) {
         installations.push(browserPath)
       }
-    } catch (err: any) {
+    } catch {
       // Not installed.
     }
   })
@@ -98,7 +98,7 @@ export function hasAccessSync(filePath: string) {
   try {
     fs.accessSync(filePath)
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }
