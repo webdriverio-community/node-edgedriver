@@ -45,7 +45,7 @@ export async function download (
   log.info(`Downloading Edgedriver from ${downloadUrl}`)
   const res = await fetch(downloadUrl)
 
-  if (!res.body) {
+  if (!res.body || !res.ok || res.status !== 200) {
     throw new Error(`Failed to download binary (statusCode ${res.status})`)
   }
 
@@ -151,7 +151,12 @@ export async function fetchVersion (edgeVersion: string) {
   if (edgeVersion.match(MATCH_VERSION)) {
     const [major] = edgeVersion.match(MATCH_VERSION)
     const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), platform.toUpperCase())
+    log.info(`Fetching latest version from ${url}`)
     const res = await fetch(url)
+    if (!res.ok || res.status !== 200) {
+      throw new Error(`Couldn't detect version for ${edgeVersion}`)
+    }
+
     return (await res.text()).replace(/\0/g, '').slice(2).trim()
   }
 
