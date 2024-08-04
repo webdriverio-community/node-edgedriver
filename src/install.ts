@@ -42,7 +42,7 @@ export async function download (
   }
 
   const version = await fetchVersion(edgeVersion)
-  const res = await downloadDriver(version, cacheDir)
+  const res = await downloadDriver(version)
 
   await fsp.mkdir(cacheDir, { recursive: true })
   await downloadZip(res, cacheDir)
@@ -52,7 +52,7 @@ export async function download (
   return binaryFilePath
 }
 
-async function downloadDriver(version: string, cacheDir: string) {
+async function downloadDriver(version: string) {
   try {
     const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
     log.info(`Downloading Edgedriver from ${downloadUrl}`)
