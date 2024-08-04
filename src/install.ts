@@ -42,7 +42,7 @@ export async function download (
   }
 
   const version = await fetchVersion(edgeVersion)
-  const res = await downloadDriver(version)
+  const res = await downloadDriver(version, cacheDir)
 
   await fsp.mkdir(cacheDir, { recursive: true })
   await downloadZip(res, cacheDir)
@@ -52,9 +52,9 @@ export async function download (
   return binaryFilePath
 }
 
-async function downloadDriver(version: string) {
-  const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+async function downloadDriver(version: string, cacheDir: string) {
   try {
+    const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
     log.info(`Downloading Edgedriver from ${downloadUrl}`)
     const res = await fetch(downloadUrl)
 
@@ -96,16 +96,22 @@ async function downloadDriver(version: string) {
     }
 
     log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
+    const versionResponse = await fetch(alternativeDownloadUrl)
 
-    const res = await fetch(alternativeDownloadUrl)
+    /**
+     * example output: "��127.0.2651.87"
+     */
+    const alternativeVersion = (await versionResponse.text()).trim().slice(2)
+    const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
+    log.info(`Downloading Edgedriver from ${downloadUrl}`)
+    const res = await fetch(downloadUrl)
     if (!res.body || !res.ok || res.status !== 200) {
-      throw new Error(`Failed to download binary from ${alternativeDownloadUrl} (statusCode ${res.status})`)
+      throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
     }
 
     return res
   } catch (err) {
-    log.error(`Failed to fetch Edgedriver versions: ${err.stack}`)
-    throw new Error(`Failed to download Edgedriver from ${downloadUrl}`)
+    throw new Error(`Failed to download Edgedriver: ${err.message}`)
   }
 }
 
