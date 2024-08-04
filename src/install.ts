@@ -97,11 +97,7 @@ async function downloadDriver(version: string) {
 
     log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
     const versionResponse = await fetch(alternativeDownloadUrl)
-
-    /**
-     * example output: "��127.0.2651.87"
-     */
-    const alternativeVersion = (await versionResponse.text()).trim().slice(2)
+    const alternativeVersion = sanitizeVersion(await versionResponse.text())
     const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
     log.info(`Downloading Edgedriver from ${downloadUrl}`)
     const res = await fetch(downloadUrl)
@@ -199,7 +195,7 @@ export async function fetchVersion (edgeVersion: string) {
     }
 
     const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()))
-    return (await res.text()).replace(/\0/g, '').slice(2).trim()
+    return sanitizeVersion(await res.text())
   }
 
   /**
@@ -215,7 +211,7 @@ export async function fetchVersion (edgeVersion: string) {
       throw new Error(`Couldn't detect version for ${edgeVersion}`)
     }
 
-    return (await res.text()).replace(/\0/g, '').slice(2).trim()
+    return sanitizeVersion(await res.text())
   }
 
   throw new Error(`Couldn't detect version for ${edgeVersion}`)
@@ -235,6 +231,14 @@ async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: str
     const content = await entry.getData<Blob>(new BlobWriter())
     await writeFile(unzippedFilePath, content.stream())
   }
+}
+
+/**
+ * Fetching the latest version from the CDN contains extra characters that need to be removed,
+ * e.g. "��127.0.2651.87\n\n"
+ */
+function sanitizeVersion (version: string) {
+  return version.replace(/\0/g, '').slice(2).trim()
 }
 
 /**
