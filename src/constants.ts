@@ -15,3 +15,4 @@ export const BINARY_FILE = 'msedgedriver' + (os.platform() === 'win32' ? '.exe' 
 export const DEFAULT_ALLOWED_ORIGINS = ['*']
 export const DEFAULT_ALLOWED_IPS = ['']
 export const log: Logger = logger('edgedriver')
+export const EDGEDRIVER_BUCKET = 'https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver?delimiter=%2F&maxresults=2500&restype=container&comp=list&_=1722752483611&timeout=60000'

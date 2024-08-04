@@ -4,11 +4,12 @@ import os from 'node:os'
 import cp from 'node:child_process'
 import { format } from 'node:util'
 
+import { XMLParser } from 'fast-xml-parser'
 import fetch from 'node-fetch'
 import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
 
 import findEdgePath from './finder.js'
-import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
+import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
 import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
 
 interface ProductAPIResponse {
@@ -41,13 +42,7 @@ export async function download (
   }
 
   const version = await fetchVersion(edgeVersion)
-  const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
-  log.info(`Downloading Edgedriver from ${downloadUrl}`)
-  const res = await fetch(downloadUrl)
-
-  if (!res.body || !res.ok || res.status !== 200) {
-    throw new Error(`Failed to download binary (statusCode ${res.status})`)
-  }
+  const res = await downloadDriver(version)
 
   await fsp.mkdir(cacheDir, { recursive: true })
   await downloadZip(res, cacheDir)
@@ -55,6 +50,63 @@ export async function download (
   log.info('Finished downloading Edgedriver')
   await sleep() // wait for file to be accessible, avoid ETXTBSY errors
   return binaryFilePath
+}
+
+async function downloadDriver(version: string) {
+  const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+  try {
+    log.info(`Downloading Edgedriver from ${downloadUrl}`)
+    const res = await fetch(downloadUrl)
+
+    if (!res.body || !res.ok || res.status !== 200) {
+      throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
+    }
+
+    return res
+  } catch (err) {
+    log.error(`Failed to download Edgedriver: ${err.message}, trying alternative download URL...`)
+  }
+
+  try {
+    const majorVersion = version.split('.')[0]
+    const platform = process.platform === 'darwin'
+      ? 'macos'
+      : process.platform === 'win32'
+        ? 'windows'
+        : 'linux'
+    log.info(`Attempt to fetch latest v${majorVersion} for ${platform} from ${EDGEDRIVER_BUCKET}`)
+    const versions = await fetch(EDGEDRIVER_BUCKET, {
+      headers: {
+        accept: '*/*',
+        'accept-language': 'en-US,en;q=0.9',
+        'cache-control': 'no-cache',
+        'content-type': 'application/json; charset=utf-8',
+        pragma: 'no-cache',
+      }
+    })
+
+    const parser = new XMLParser()
+    const { EnumerationResults } = parser.parse(await versions.text())
+    const blobName = `LATEST_RELEASE_${majorVersion}_${platform.toUpperCase()}`
+    const alternativeDownloadUrl = EnumerationResults.Blobs.Blob
+      .find((blob: { Name: string }) => blob.Name === blobName).Url
+
+    if (!alternativeDownloadUrl) {
+      throw new Error(`Couldn't find alternative download URL for ${version}`)
+    }
+
+    log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
+
+    const res = await fetch(alternativeDownloadUrl)
+    if (!res.body || !res.ok || res.status !== 200) {
+      throw new Error(`Failed to download binary from ${alternativeDownloadUrl} (statusCode ${res.status})`)
+    }
+
+    return res
+  } catch (err) {
+    log.error(`Failed to fetch Edgedriver versions: ${err.stack}`)
+    throw new Error(`Failed to download Edgedriver from ${downloadUrl}`)
+  }
 }
 
 async function getEdgeVersionWin (edgePath: string) {
