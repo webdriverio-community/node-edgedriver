@@ -65,7 +65,7 @@
     "webdriverio": "^9.0.4"
   },
   "dependencies": {
-    "@wdio/logger": "^8.38.0",
+    "@wdio/logger": "^9.0.4",
     "@zip.js/zip.js": "^2.7.48",
     "decamelize": "^6.0.0",
     "edge-paths": "^3.0.5",
