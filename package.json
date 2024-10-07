@@ -71,6 +71,6 @@
     "edge-paths": "^3.0.5",
     "fast-xml-parser": "^4.4.1",
     "node-fetch": "^3.3.2",
-    "which": "^4.0.0"
+    "which": "^5.0.0"
   }
 }
