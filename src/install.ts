@@ -5,7 +5,6 @@ import cp from 'node:child_process'
 import { format } from 'node:util'
 
 import { XMLParser } from 'fast-xml-parser'
-import fetch from 'node-fetch'
 import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
 
 import findEdgePath from './finder.js'
