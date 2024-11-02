@@ -6,6 +6,8 @@ import { fetchVersion } from '../src/install.js'
 import { getNameByArchitecture, parseParams } from '../src/utils.js'
 import { EDGE_PRODUCTS_API } from '../src/constants.js'
 
+import apiResponse from './__fixtures__/api.json' assert { type: 'json' }
+
 vi.mock('node:os', () => ({
   default: {
     arch: vi.fn(),
@@ -13,24 +15,19 @@ vi.mock('node:os', () => ({
   }
 }))
 
-vi.mock('node-fetch', async (orig) => {
-  const origFetch: any = await orig()
-  const apiResponse = await import('./__fixtures__/api.json', { assert: { type: 'json' } })
-  return {
-    default: vi.fn(async (url) => {
-      if (url === EDGE_PRODUCTS_API) {
-        return {
-          json: vi.fn().mockResolvedValue(apiResponse.default)
-        }
-      } else if (!url.includes('LATEST_RELEASE')) {
-        return {
-          text: vi.fn().mockResolvedValue('��123.456.789.0')
-        }
-      }
-
-      return origFetch.default(url)
-    })
+const origFetch = globalThis.fetch
+vi.stubGlobal('fetch', async (url) => {
+  if (url === EDGE_PRODUCTS_API) {
+    return {
+      json: vi.fn().mockResolvedValue(apiResponse)
+    }
+  } else if (!url.includes('LATEST_RELEASE')) {
+    return {
+      text: vi.fn().mockResolvedValue('��123.456.789.0')
+    }
   }
+
+  return origFetch(url)
 })
 
 test('fetchVersion', async () => {
