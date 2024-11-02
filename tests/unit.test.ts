@@ -1,12 +1,11 @@
 import os from 'node:os'
 import { vi, test, expect } from 'vitest'
+import fetch from 'node-fetch'
 
 import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
 import { getNameByArchitecture, parseParams } from '../src/utils.js'
 import { EDGE_PRODUCTS_API } from '../src/constants.js'
-
-import apiResponse from './__fixtures__/api.json' assert { type: 'json' }
 
 vi.mock('node:os', () => ({
   default: {
@@ -15,19 +14,24 @@ vi.mock('node:os', () => ({
   }
 }))
 
-const origFetch = globalThis.fetch
-vi.stubGlobal('fetch', async (url) => {
-  if (url === EDGE_PRODUCTS_API) {
-    return {
-      json: vi.fn().mockResolvedValue(apiResponse)
-    }
-  } else if (!url.includes('LATEST_RELEASE')) {
-    return {
-      text: vi.fn().mockResolvedValue('��123.456.789.0')
-    }
-  }
+vi.mock('node-fetch', async (orig) => {
+  const origFetch: any = await orig()
+  const apiResponse = await import('./__fixtures__/api.json', { assert: { type: 'json' } })
+  return {
+    default: vi.fn(async (url) => {
+      if (url === EDGE_PRODUCTS_API) {
+        return {
+          json: vi.fn().mockResolvedValue(apiResponse.default)
+        }
+      } else if (!url.includes('LATEST_RELEASE')) {
+        return {
+          text: vi.fn().mockResolvedValue('��123.456.789.0')
+        }
+      }
 
-  return origFetch(url)
+      return origFetch.default(url)
+    })
+  }
 })
 
 test('fetchVersion', async () => {
@@ -53,7 +57,19 @@ test('fetchVersion', async () => {
   vi.mocked(os.arch).mockReturnValue('arm64')
   vi.mocked(os.platform).mockReturnValue('darwin')
   expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+})
 
+test('fetchVersion with proxy support', async () => {
+  vi.resetModules()
+  process.env.HTTPS_PROXY = 'https://proxy.com'
+  const { fetchVersion } = await import('../src/install.js')
+  expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+  expect(fetch).toBeCalledWith(
+    expect.any(String),
+    expect.objectContaining({
+      agent: expect.any(Object)
+    })
+  )
 })
 
 test('getNameByArchitecture', () => {

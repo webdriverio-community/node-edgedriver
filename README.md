@@ -31,6 +31,10 @@ $ EDGEDRIVER_VERSION=105.0.1343.33 npx edgedriver --version
 Microsoft Edge WebDriver 105.0.1343.33 (4122bb4646b33f33bca5d269490b9caadfc452b2)
 ```
 
+# Setting a PROXY URL
+
+Use `HTTPS_PROXY` or `HTTP_PROXY` to set your proxy URL.
+
 # Programmatic Interface
 
 You can import this package with Node.js and start the driver as part of your script and use it e.g. with [WebdriverIO](https://webdriver.io).

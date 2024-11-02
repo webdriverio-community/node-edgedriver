@@ -4,8 +4,11 @@ import os from 'node:os'
 import cp from 'node:child_process'
 import { format } from 'node:util'
 
+import fetch, { type RequestInit } from 'node-fetch'
 import { XMLParser } from 'fast-xml-parser'
 import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import { HttpProxyAgent } from 'http-proxy-agent'
 
 import findEdgePath from './finder.js'
 import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
@@ -18,6 +21,13 @@ interface ProductAPIResponse {
     Architecture: string
     ProductVersion: string
   }[]
+}
+
+const fetchOpts: RequestInit = {}
+if (process.env.HTTPS_PROXY) {
+  fetchOpts.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
+} else if (process.env.HTTP_PROXY) {
+  fetchOpts.agent = new HttpProxyAgent(process.env.HTTP_PROXY)
 }
 
 export async function download (
@@ -55,7 +65,7 @@ async function downloadDriver(version: string) {
   try {
     const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
     log.info(`Downloading Edgedriver from ${downloadUrl}`)
-    const res = await fetch(downloadUrl)
+    const res = await fetch(downloadUrl, fetchOpts)
 
     if (!res.body || !res.ok || res.status !== 200) {
       throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
@@ -75,6 +85,7 @@ async function downloadDriver(version: string) {
         : 'linux'
     log.info(`Attempt to fetch latest v${majorVersion} for ${platform} from ${EDGEDRIVER_BUCKET}`)
     const versions = await fetch(EDGEDRIVER_BUCKET, {
+      ...fetchOpts,
       headers: {
         accept: '*/*',
         'accept-language': 'en-US,en;q=0.9',
@@ -95,11 +106,11 @@ async function downloadDriver(version: string) {
     }
 
     log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
-    const versionResponse = await fetch(alternativeDownloadUrl)
+    const versionResponse = await fetch(alternativeDownloadUrl, fetchOpts)
     const alternativeVersion = sanitizeVersion(await versionResponse.text())
     const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
     log.info(`Downloading Edgedriver from ${downloadUrl}`)
-    const res = await fetch(downloadUrl)
+    const res = await fetch(downloadUrl, fetchOpts)
     if (!res.body || !res.ok || res.status !== 200) {
       throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
     }
@@ -168,7 +179,7 @@ export async function fetchVersion (edgeVersion: string) {
    * if browser version is a tagged version, e.g. stable, beta, dev, canary
    */
   if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
-    const apiResponse = await fetch(EDGE_PRODUCTS_API).catch((err) => {
+    const apiResponse = await fetch(EDGE_PRODUCTS_API, fetchOpts).catch((err) => {
       log.error(`Couldn't fetch version from ${EDGE_PRODUCTS_API}: ${err.stack}`)
       return { json: async () => [] as ProductAPIResponse[] }
     })
@@ -193,7 +204,7 @@ export async function fetchVersion (edgeVersion: string) {
       return productVersion
     }
 
-    const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()))
+    const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()), fetchOpts)
     return sanitizeVersion(await res.text())
   }
 
@@ -205,7 +216,7 @@ export async function fetchVersion (edgeVersion: string) {
     const [major] = edgeVersion.match(MATCH_VERSION)
     const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), platform.toUpperCase())
     log.info(`Fetching latest version from ${url}`)
-    const res = await fetch(url)
+    const res = await fetch(url, fetchOpts)
     if (!res.ok || res.status !== 200) {
       throw new Error(`Couldn't detect version for ${edgeVersion}`)
     }
