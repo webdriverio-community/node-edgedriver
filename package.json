@@ -1,6 +1,6 @@
 {
   "name": "edgedriver",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Microsofts' EdgeDriver for Node.js",
   "homepage": "https://webdriver.io",
   "license": "MIT",
