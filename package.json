@@ -49,15 +49,10 @@
     "watch": "npm run build -- --watch"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^9.14.0",
     "@types/node": "^22.8.6",
-    "@typescript-eslint/eslint-plugin": "^8.12.2",
-    "@typescript-eslint/parser": "^8.12.2",
     "@vitest/coverage-v8": "^2.1.4",
+    "@wdio/eslint": "^0.0.3",
     "eslint": "^9.14.0",
-    "eslint-plugin-unicorn": "^56.0.0",
-    "globals": "^15.11.0",
     "husky": "^9.1.6",
     "npm-run-all2": "^7.0.1",
     "release-it": "^17.10.0",

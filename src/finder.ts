@@ -22,25 +22,25 @@ interface ApplicationDataType {
 
 const DARWIN_LIST_APPS = 'system_profiler SPApplicationsDataType -json'
 const darwinGetAppPaths = (app: string) => {
-  const apps: ApplicationDataType = JSON.parse(execSync(DARWIN_LIST_APPS).toString())
-  const appPaths = apps.SPApplicationsDataType
-    .filter(inst => inst.info && inst.info.startsWith(app))
-    .map(inst => inst.path)
+    const apps: ApplicationDataType = JSON.parse(execSync(DARWIN_LIST_APPS).toString())
+    const appPaths = apps.SPApplicationsDataType
+        .filter(inst => inst.info && inst.info.startsWith(app))
+        .map(inst => inst.path)
 
-  return appPaths
+    return appPaths
 }
 
 const darwinGetInstallations = (appPaths: string[], suffixes: string[]) => {
-  const installations: string[] = []
-  appPaths.forEach((inst) => {
-    suffixes.forEach(suffix => {
-      const execPath = path.join(inst.substring(0, inst.indexOf('.app') + 4).trim(), suffix)
-      if (hasAccessSync(execPath) && installations.indexOf(execPath) === -1) {
-        installations.push(execPath)
-      }
+    const installations: string[] = []
+    appPaths.forEach((inst) => {
+        suffixes.forEach(suffix => {
+            const execPath = path.join(inst.substring(0, inst.indexOf('.app') + 4).trim(), suffix)
+            if (hasAccessSync(execPath) && installations.indexOf(execPath) === -1) {
+                installations.push(execPath)
+            }
+        })
     })
-  })
-  return installations
+    return installations
 }
 
 const newLineRegex = /\r?\n/
@@ -48,35 +48,35 @@ const EDGE_BINARY_NAMES = ['edge', 'msedge', 'microsoft-edge', 'microsoft-edge-d
 const EDGE_REGEX = /((ms|microsoft))?edge/g
 
 function darwin() {
-  const suffixes = [
-    '/Contents/MacOS/Microsoft Edge'
-  ]
+    const suffixes = [
+        '/Contents/MacOS/Microsoft Edge'
+    ]
 
-  const appName = 'Microsoft Edge'
-  const defaultPath = `/Applications/${appName}.app${suffixes[0]}`
+    const appName = 'Microsoft Edge'
+    const defaultPath = `/Applications/${appName}.app${suffixes[0]}`
 
-  let installations
-  if (hasAccessSync(defaultPath)) {
-    installations = [defaultPath]
-  } else {
-    const appPaths = darwinGetAppPaths(appName)
-    installations = darwinGetInstallations(appPaths, suffixes)
-  }
+    let installations
+    if (hasAccessSync(defaultPath)) {
+        installations = [defaultPath]
+    } else {
+        const appPaths = darwinGetAppPaths(appName)
+        installations = darwinGetInstallations(appPaths, suffixes)
+    }
 
-  // Retains one per line to maintain readability.
-  // clang-format off
-  const priorities = [
-    { regex: new RegExp(`^${process.env.HOME}/Applications/.*Microsoft Edge.app`), weight: 50 },
-    { regex: /^\/Applications\/.*Microsoft Edge.app/, weight: 100 },
-    { regex: /^\/Volumes\/.*Microsoft Edge.app/, weight: -2 }
-  ]
+    // Retains one per line to maintain readability.
+    // clang-format off
+    const priorities = [
+        { regex: new RegExp(`^${process.env.HOME}/Applications/.*Microsoft Edge.app`), weight: 50 },
+        { regex: /^\/Applications\/.*Microsoft Edge.app/, weight: 100 },
+        { regex: /^\/Volumes\/.*Microsoft Edge.app/, weight: -2 }
+    ]
 
-  const whichFinds = findByWhich(
-    EDGE_BINARY_NAMES,
-    [{ regex: EDGE_REGEX, weight: 51 }]
-  )
-  const installFinds = sort(installations, priorities)
-  return [...installFinds, ...whichFinds]
+    const whichFinds = findByWhich(
+        EDGE_BINARY_NAMES,
+        [{ regex: EDGE_REGEX, weight: 51 }]
+    )
+    const installFinds = sort(installations, priorities)
+    return [...installFinds, ...whichFinds]
 }
 
 /**
@@ -85,99 +85,99 @@ function darwin() {
  * 2. Look for edge by using the which command
  */
 function linux() {
-  let installations: string[] = []
+    let installations: string[] = []
 
-  // 1. Look into the directories where .desktop are saved on gnome based distros
-  const desktopInstallationFolders = [
-    path.join(os.homedir(), '.local/share/applications/'),
-    '/usr/share/applications/',
-  ]
-  desktopInstallationFolders.forEach(folder => {
-    installations = installations.concat(findEdgeExecutables(folder))
-  })
+    // 1. Look into the directories where .desktop are saved on gnome based distros
+    const desktopInstallationFolders = [
+        path.join(os.homedir(), '.local/share/applications/'),
+        '/usr/share/applications/',
+    ]
+    desktopInstallationFolders.forEach(folder => {
+        installations = installations.concat(findEdgeExecutables(folder))
+    })
 
-  return findByWhich(
-    EDGE_BINARY_NAMES,
-    [{ regex: EDGE_REGEX, weight: 51 }]
-  )
+    return findByWhich(
+        EDGE_BINARY_NAMES,
+        [{ regex: EDGE_REGEX, weight: 51 }]
+    )
 }
 
 function win32() {
-  const installations: string[] = []
-  const suffixes = [
-    `${path.sep}Microsoft${path.sep}Edge${path.sep}Application${path.sep}edge.exe`,
-    `${path.sep}Microsoft${path.sep}Edge${path.sep}Application${path.sep}msedge.exe`,
-    `${path.sep}Microsoft${path.sep}Edge Dev${path.sep}Application${path.sep}msedge.exe`
-  ]
+    const installations: string[] = []
+    const suffixes = [
+        `${path.sep}Microsoft${path.sep}Edge${path.sep}Application${path.sep}edge.exe`,
+        `${path.sep}Microsoft${path.sep}Edge${path.sep}Application${path.sep}msedge.exe`,
+        `${path.sep}Microsoft${path.sep}Edge Dev${path.sep}Application${path.sep}msedge.exe`
+    ]
 
-  const prefixes = [
-    process.env.LOCALAPPDATA || '', process.env.PROGRAMFILES || '', process.env['PROGRAMFILES(X86)'] || ''
-  ].filter(Boolean)
+    const prefixes = [
+        process.env.LOCALAPPDATA || '', process.env.PROGRAMFILES || '', process.env['PROGRAMFILES(X86)'] || ''
+    ].filter(Boolean)
 
-  const checkedPath: string[] = []
-  prefixes.forEach(prefix => suffixes.forEach(suffix => {
-    const edgePath = path.join(prefix, suffix)
-    checkedPath.push(edgePath)
-    if (hasAccessSync(edgePath)) {
-      installations.push(edgePath)
-    }
-  }))
+    const checkedPath: string[] = []
+    prefixes.forEach(prefix => suffixes.forEach(suffix => {
+        const edgePath = path.join(prefix, suffix)
+        checkedPath.push(edgePath)
+        if (hasAccessSync(edgePath)) {
+            installations.push(edgePath)
+        }
+    }))
 
-  /**
+    /**
    * fallback using edge-path
    */
-  if (installations.length === 0) {
-    const edgePath = getEdgePath()
-    if (hasAccessSync(edgePath)) {
-      installations.push(edgePath)
+    if (installations.length === 0) {
+        const edgePath = getEdgePath()
+        if (hasAccessSync(edgePath)) {
+            installations.push(edgePath)
+        }
     }
-  }
 
-  return installations
+    return installations
 }
 
 function findEdgeExecutables(folder: string) {
-  const argumentsRegex = /(^[^ ]+).*/ // Take everything up to the first space
-  const edgeExecRegex = '^Exec=/.*/(edge)-.*'
+    const argumentsRegex = /(^[^ ]+).*/ // Take everything up to the first space
+    const edgeExecRegex = '^Exec=/.*/(edge)-.*'
 
-  const installations: string[] = []
-  if (hasAccessSync(folder)) {
-    let execPaths
+    const installations: string[] = []
+    if (hasAccessSync(folder)) {
+        let execPaths
 
-    // Some systems do not support grep -R so fallback to -r.
-    // See https://github.com/GoogleChrome/chrome-launcher/issues/46 for more context.
-    try {
-      execPaths = execSync(
-        `grep -ER "${edgeExecRegex}" ${folder} | awk -F '=' '{print $2}'`, { stdio: 'pipe' })
-    } catch {
-      execPaths = execSync(
-        `grep -Er "${edgeExecRegex}" ${folder} | awk -F '=' '{print $2}'`, { stdio: 'pipe' })
+        // Some systems do not support grep -R so fallback to -r.
+        // See https://github.com/GoogleChrome/chrome-launcher/issues/46 for more context.
+        try {
+            execPaths = execSync(
+                `grep -ER "${edgeExecRegex}" ${folder} | awk -F '=' '{print $2}'`, { stdio: 'pipe' })
+        } catch {
+            execPaths = execSync(
+                `grep -Er "${edgeExecRegex}" ${folder} | awk -F '=' '{print $2}'`, { stdio: 'pipe' })
+        }
+
+        execPaths = execPaths.toString().split(newLineRegex).map(
+            (execPath) => execPath.replace(argumentsRegex, '$1'))
+
+        execPaths.forEach((execPath) => hasAccessSync(execPath) && installations.push(execPath))
     }
 
-    execPaths = execPaths.toString().split(newLineRegex).map(
-      (execPath) => execPath.replace(argumentsRegex, '$1'))
-
-    execPaths.forEach((execPath) => hasAccessSync(execPath) && installations.push(execPath))
-  }
-
-  return installations
+    return installations
 }
 
 export default () => {
-  /**
+    /**
    * Check for the EDGE_BINARY_PATH env variable
    */
-  const binaryPathEnv = process.env.EDGE_BINARY_PATH
-  if (typeof binaryPathEnv === 'string' && binaryPathEnv) {
-    return process.env.EDGE_BINARY_PATH
-  }
+    const binaryPathEnv = process.env.EDGE_BINARY_PATH
+    if (typeof binaryPathEnv === 'string' && binaryPathEnv) {
+        return process.env.EDGE_BINARY_PATH
+    }
 
-  if (os.platform() === 'win32') {
-    return win32()[0]
-  }
-  if (os.platform() === 'darwin') {
-    return darwin()[0]
-  }
+    if (os.platform() === 'win32') {
+        return win32()[0]
+    }
+    if (os.platform() === 'darwin') {
+        return darwin()[0]
+    }
 
-  return linux()[0]
+    return linux()[0]
 }

@@ -3,7 +3,7 @@ import logger, { type Logger } from '@wdio/logger'
 
 export const TAGGED_VERSIONS = ['stable', 'beta', 'dev', 'canary']
 export const BASE_CDN_URL = (
-  process.env.EDGEDRIVER_CDNURL ||
+    process.env.EDGEDRIVER_CDNURL ||
   process.env.npm_config_edgedriver_cdnurl ||
   'https://msedgedriver.azureedge.net'
 )

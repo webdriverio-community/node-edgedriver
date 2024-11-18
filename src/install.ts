@@ -25,171 +25,171 @@ interface ProductAPIResponse {
 
 const fetchOpts: RequestInit = {}
 if (process.env.HTTPS_PROXY) {
-  fetchOpts.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
+    fetchOpts.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
 } else if (process.env.HTTP_PROXY) {
-  fetchOpts.agent = new HttpProxyAgent(process.env.HTTP_PROXY)
+    fetchOpts.agent = new HttpProxyAgent(process.env.HTTP_PROXY)
 }
 
 export async function download (
-  edgeVersion: string = process.env.EDGEDRIVER_VERSION,
-  cacheDir: string = process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()
+    edgeVersion: string = process.env.EDGEDRIVER_VERSION,
+    cacheDir: string = process.env.EDGEDRIVER_CACHE_DIR || os.tmpdir()
 ) {
-  const binaryFilePath = path.resolve(cacheDir, BINARY_FILE)
-  if (await hasAccess(binaryFilePath)) {
-    return binaryFilePath
-  }
-
-  if (!edgeVersion) {
-    const edgePath = findEdgePath()
-    if (!edgePath) {
-      throw new Error('Could not find Microsoft Edge binary, please make sure the browser is installed on your system.')
+    const binaryFilePath = path.resolve(cacheDir, BINARY_FILE)
+    if (await hasAccess(binaryFilePath)) {
+        return binaryFilePath
     }
 
-    log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
-    edgeVersion = os.platform() === 'win32' ? await getEdgeVersionWin(edgePath) : await getEdgeVersionUnix(edgePath)
-    log.info(`Detected Microsoft Edge v${edgeVersion}`)
-  }
+    if (!edgeVersion) {
+        const edgePath = findEdgePath()
+        if (!edgePath) {
+            throw new Error('Could not find Microsoft Edge binary, please make sure the browser is installed on your system.')
+        }
 
-  const version = await fetchVersion(edgeVersion)
-  const res = await downloadDriver(version)
+        log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
+        edgeVersion = os.platform() === 'win32' ? await getEdgeVersionWin(edgePath) : await getEdgeVersionUnix(edgePath)
+        log.info(`Detected Microsoft Edge v${edgeVersion}`)
+    }
 
-  await fsp.mkdir(cacheDir, { recursive: true })
-  await downloadZip(res, cacheDir)
-  await fsp.chmod(binaryFilePath, '755')
-  log.info('Finished downloading Edgedriver')
-  await sleep() // wait for file to be accessible, avoid ETXTBSY errors
-  return binaryFilePath
+    const version = await fetchVersion(edgeVersion)
+    const res = await downloadDriver(version)
+
+    await fsp.mkdir(cacheDir, { recursive: true })
+    await downloadZip(res, cacheDir)
+    await fsp.chmod(binaryFilePath, '755')
+    log.info('Finished downloading Edgedriver')
+    await sleep() // wait for file to be accessible, avoid ETXTBSY errors
+    return binaryFilePath
 }
 
 async function downloadDriver(version: string) {
-  try {
-    const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
-    log.info(`Downloading Edgedriver from ${downloadUrl}`)
-    const res = await fetch(downloadUrl, fetchOpts)
+    try {
+        const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+        log.info(`Downloading Edgedriver from ${downloadUrl}`)
+        const res = await fetch(downloadUrl, fetchOpts)
 
-    if (!res.body || !res.ok || res.status !== 200) {
-      throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
+        if (!res.body || !res.ok || res.status !== 200) {
+            throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
+        }
+
+        return res
+    } catch (err) {
+        log.error(`Failed to download Edgedriver: ${err.message}, trying alternative download URL...`)
     }
 
-    return res
-  } catch (err) {
-    log.error(`Failed to download Edgedriver: ${err.message}, trying alternative download URL...`)
-  }
+    try {
+        const majorVersion = version.split('.')[0]
+        const platform = process.platform === 'darwin'
+            ? 'macos'
+            : process.platform === 'win32'
+                ? 'windows'
+                : 'linux'
+        log.info(`Attempt to fetch latest v${majorVersion} for ${platform} from ${EDGEDRIVER_BUCKET}`)
+        const versions = await fetch(EDGEDRIVER_BUCKET, {
+            ...fetchOpts,
+            headers: {
+                accept: '*/*',
+                'accept-language': 'en-US,en;q=0.9',
+                'cache-control': 'no-cache',
+                'content-type': 'application/json; charset=utf-8',
+                pragma: 'no-cache',
+            }
+        })
 
-  try {
-    const majorVersion = version.split('.')[0]
-    const platform = process.platform === 'darwin'
-      ? 'macos'
-      : process.platform === 'win32'
-        ? 'windows'
-        : 'linux'
-    log.info(`Attempt to fetch latest v${majorVersion} for ${platform} from ${EDGEDRIVER_BUCKET}`)
-    const versions = await fetch(EDGEDRIVER_BUCKET, {
-      ...fetchOpts,
-      headers: {
-        accept: '*/*',
-        'accept-language': 'en-US,en;q=0.9',
-        'cache-control': 'no-cache',
-        'content-type': 'application/json; charset=utf-8',
-        pragma: 'no-cache',
-      }
-    })
+        const parser = new XMLParser()
+        const { EnumerationResults } = parser.parse(await versions.text())
+        const blobName = `LATEST_RELEASE_${majorVersion}_${platform.toUpperCase()}`
+        const alternativeDownloadUrl = EnumerationResults.Blobs.Blob
+            .find((blob: { Name: string }) => blob.Name === blobName).Url
 
-    const parser = new XMLParser()
-    const { EnumerationResults } = parser.parse(await versions.text())
-    const blobName = `LATEST_RELEASE_${majorVersion}_${platform.toUpperCase()}`
-    const alternativeDownloadUrl = EnumerationResults.Blobs.Blob
-      .find((blob: { Name: string }) => blob.Name === blobName).Url
+        if (!alternativeDownloadUrl) {
+            throw new Error(`Couldn't find alternative download URL for ${version}`)
+        }
 
-    if (!alternativeDownloadUrl) {
-      throw new Error(`Couldn't find alternative download URL for ${version}`)
+        log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
+        const versionResponse = await fetch(alternativeDownloadUrl, fetchOpts)
+        const alternativeVersion = sanitizeVersion(await versionResponse.text())
+        const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
+        log.info(`Downloading Edgedriver from ${downloadUrl}`)
+        const res = await fetch(downloadUrl, fetchOpts)
+        if (!res.body || !res.ok || res.status !== 200) {
+            throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
+        }
+
+        return res
+    } catch (err) {
+        throw new Error(`Failed to download Edgedriver: ${err.message}`)
     }
-
-    log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
-    const versionResponse = await fetch(alternativeDownloadUrl, fetchOpts)
-    const alternativeVersion = sanitizeVersion(await versionResponse.text())
-    const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
-    log.info(`Downloading Edgedriver from ${downloadUrl}`)
-    const res = await fetch(downloadUrl, fetchOpts)
-    if (!res.body || !res.ok || res.status !== 200) {
-      throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
-    }
-
-    return res
-  } catch (err) {
-    throw new Error(`Failed to download Edgedriver: ${err.message}`)
-  }
 }
 
 async function getEdgeVersionWin (edgePath: string) {
-  const versionPath = path.dirname(edgePath)
-  const contents = await fsp.readdir(versionPath)
-  const versions = contents.filter((p) => /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/g.test(p))
+    const versionPath = path.dirname(edgePath)
+    const contents = await fsp.readdir(versionPath)
+    const versions = contents.filter((p) => /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/g.test(p))
 
-  // returning oldest in case there is an updated version and Edge still hasn't relaunched
-  const oldest = versions.sort((a, b) => a > b ? 1 : -1)[0]
-  return oldest
+    // returning oldest in case there is an updated version and Edge still hasn't relaunched
+    const oldest = versions.sort((a, b) => a > b ? 1 : -1)[0]
+    return oldest
 }
 
 async function getEdgeVersionUnix (edgePath: string) {
-  log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
-  const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
-    if (err) {
-      return reject(err)
-    }
-    if (stderr) {
-      return reject(new Error(stderr))
-    }
-    return resolve(stdout)
-  }))
-  /**
+    log.info(`Trying to detect Microsoft Edge version from binary found at ${edgePath}`)
+    const versionOutput = await new Promise<string>((resolve, reject) => cp.exec(`"${edgePath}" --version`, (err, stdout, stderr) => {
+        if (err) {
+            return reject(err)
+        }
+        if (stderr) {
+            return reject(new Error(stderr))
+        }
+        return resolve(stdout)
+    }))
+    /**
    * example output: "Microsoft Edge 124.0.2478.105 unknown"
    */
-  return versionOutput
+    return versionOutput
     /**
      * trim the output
      */
-    .trim()
+        .trim()
     /**
      * split by space, e.g. `[Microsoft, Edge, 124.0.2478.105, unknown]
      */
-    .split(' ')
+        .split(' ')
     /**
      * filter for entity that matches the version pattern, e.g. `124.0.2478.105`
      */
-    .filter((v) => v.match(/\d+\.\d+\.\d+\.\d+/g))
+        .filter((v) => v.match(/\d+\.\d+\.\d+\.\d+/g))
     /**
      * get the first entity
      */
-    .pop()
+        .pop()
 }
 
 export async function fetchVersion (edgeVersion: string) {
-  const p = os.platform()
-  const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
+    const p = os.platform()
+    const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
 
-  /**
+    /**
    * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
    */
-  if (edgeVersion.split('.').length === 4) {
-    return edgeVersion
-  }
+    if (edgeVersion.split('.').length === 4) {
+        return edgeVersion
+    }
 
-  /**
+    /**
    * if browser version is a tagged version, e.g. stable, beta, dev, canary
    */
-  if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
-    const apiResponse = await fetch(EDGE_PRODUCTS_API, fetchOpts).catch((err) => {
-      log.error(`Couldn't fetch version from ${EDGE_PRODUCTS_API}: ${err.stack}`)
-      return { json: async () => [] as ProductAPIResponse[] }
-    })
-    const products = await apiResponse.json() as ProductAPIResponse[]
-    const product = products.find((p) => p.Product.toLowerCase() === edgeVersion.toLowerCase())
-    const productVersion = product?.Releases.find((r) => (
-      /**
+    if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
+        const apiResponse = await fetch(EDGE_PRODUCTS_API, fetchOpts).catch((err) => {
+            log.error(`Couldn't fetch version from ${EDGE_PRODUCTS_API}: ${err.stack}`)
+            return { json: async () => [] as ProductAPIResponse[] }
+        })
+        const products = await apiResponse.json() as ProductAPIResponse[]
+        const product = products.find((p) => p.Product.toLowerCase() === edgeVersion.toLowerCase())
+        const productVersion = product?.Releases.find((r) => (
+            /**
        * On Mac we all product versions are universal to its architecture
        */
-      (platform === 'mac' && r.Platform === 'MacOS') ||
+            (platform === 'mac' && r.Platform === 'MacOS') ||
       /**
        * On Windows we need to check for the architecture
        */
@@ -198,49 +198,49 @@ export async function fetchVersion (edgeVersion: string) {
        * On Linux we only have one architecture
        */
       (platform === 'linux' && r.Platform === 'Linux')
-    ))?.ProductVersion
+        ))?.ProductVersion
 
-    if (productVersion) {
-      return productVersion
+        if (productVersion) {
+            return productVersion
+        }
+
+        const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()), fetchOpts)
+        return sanitizeVersion(await res.text())
     }
 
-    const res = await fetch(format(TAGGED_VERSION_URL, edgeVersion.toUpperCase()), fetchOpts)
-    return sanitizeVersion(await res.text())
-  }
-
-  /**
+    /**
    * check for a number in the version and check for that
    */
-  const MATCH_VERSION = /\d+/g
-  if (edgeVersion.match(MATCH_VERSION)) {
-    const [major] = edgeVersion.match(MATCH_VERSION)
-    const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), platform.toUpperCase())
-    log.info(`Fetching latest version from ${url}`)
-    const res = await fetch(url, fetchOpts)
-    if (!res.ok || res.status !== 200) {
-      throw new Error(`Couldn't detect version for ${edgeVersion}`)
+    const MATCH_VERSION = /\d+/g
+    if (edgeVersion.match(MATCH_VERSION)) {
+        const [major] = edgeVersion.match(MATCH_VERSION)
+        const url = format(LATEST_RELEASE_URL, major.toString().toUpperCase(), platform.toUpperCase())
+        log.info(`Fetching latest version from ${url}`)
+        const res = await fetch(url, fetchOpts)
+        if (!res.ok || res.status !== 200) {
+            throw new Error(`Couldn't detect version for ${edgeVersion}`)
+        }
+
+        return sanitizeVersion(await res.text())
     }
 
-    return sanitizeVersion(await res.text())
-  }
-
-  throw new Error(`Couldn't detect version for ${edgeVersion}`)
+    throw new Error(`Couldn't detect version for ${edgeVersion}`)
 }
 
 async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: string) {
-  const zipBlob = await res.blob()
-  const zip = new ZipReader(new BlobReader(zipBlob))
-  for (const entry of await zip.getEntries()) {
-    const unzippedFilePath = path.join(cacheDir, entry.filename)
-    if (entry.directory) {
-      continue
+    const zipBlob = await res.blob()
+    const zip = new ZipReader(new BlobReader(zipBlob))
+    for (const entry of await zip.getEntries()) {
+        const unzippedFilePath = path.join(cacheDir, entry.filename)
+        if (entry.directory) {
+            continue
+        }
+        if (!await hasAccess(path.dirname(unzippedFilePath))) {
+            await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
+        }
+        const content = await entry.getData<Blob>(new BlobWriter())
+        await writeFile(unzippedFilePath, content.stream())
     }
-    if (!await hasAccess(path.dirname(unzippedFilePath))) {
-      await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
-    }
-    const content = await entry.getData<Blob>(new BlobWriter())
-    await writeFile(unzippedFilePath, content.stream())
-  }
 }
 
 /**
@@ -248,15 +248,15 @@ async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: str
  * e.g. "��127.0.2651.87\n\n"
  */
 function sanitizeVersion (version: string) {
-  return version.replace(/\0/g, '').slice(2).trim()
+    return version.replace(/\0/g, '').slice(2).trim()
 }
 
 /**
  * download on install
  */
 if (process.argv[1] && process.argv[1].endsWith('/dist/install.js') && Boolean(process.env.EDGEDRIVER_AUTO_INSTALL)) {
-  await download().then(
-    () => log.info('Success!'),
-    (err) => log.error(`Failed to install Edgedriver: ${err.stack}`)
-  )
+    await download().then(
+        () => log.info('Success!'),
+        (err) => log.error(`Failed to install Edgedriver: ${err.stack}`)
+    )
 }
