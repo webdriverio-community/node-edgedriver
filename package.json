@@ -67,7 +67,7 @@
     "@zip.js/zip.js": "^2.7.53",
     "decamelize": "^6.0.0",
     "edge-paths": "^3.0.5",
-    "fast-xml-parser": "^4.5.0",
+    "fast-xml-parser": "^5.0.8",
     "http-proxy-agent": "^7.0.2",
     "https-proxy-agent": "^7.0.5",
     "node-fetch": "^3.3.2",
