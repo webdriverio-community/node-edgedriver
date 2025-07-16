@@ -5,7 +5,7 @@ export const TAGGED_VERSIONS = ['stable', 'beta', 'dev', 'canary']
 export const BASE_CDN_URL = (
     process.env.EDGEDRIVER_CDNURL ||
   process.env.npm_config_edgedriver_cdnurl ||
-  'https://msedgedriver.azureedge.net'
+  'https://msedgedriver.microsoft.com'
 )
 export const DOWNLOAD_URL = `${BASE_CDN_URL}/%s/%s.zip`
 export const EDGE_PRODUCTS_API = 'https://edgeupdates.microsoft.com/api/products'
