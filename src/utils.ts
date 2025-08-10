@@ -8,8 +8,8 @@ import decamelize from 'decamelize'
 import type { EdgedriverParameters } from './types.js'
 
 interface Priorities {
-  regex: RegExp
-  weight: number
+    regex: RegExp
+    weight: number
 }
 
 export function getNameByArchitecture() {
