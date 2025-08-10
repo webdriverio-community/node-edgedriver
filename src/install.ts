@@ -15,12 +15,12 @@ import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_U
 import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
 
 interface ProductAPIResponse {
-  Product: string
-  Releases: {
-    Platform: string
-    Architecture: string
-    ProductVersion: string
-  }[]
+    Product: string
+    Releases: {
+        Platform: string
+        Architecture: string
+        ProductVersion: string
+    }[]
 }
 
 const fetchOpts: RequestInit = {}

@@ -14,10 +14,10 @@ import { getEdgePath } from 'edge-paths'
 import { sort, findByWhich, hasAccessSync } from './utils.js'
 
 interface ApplicationDataType {
-  SPApplicationsDataType: {
-    info: string
-    path: string
-  }[]
+    SPApplicationsDataType: {
+        info: string
+        path: string
+    }[]
 }
 
 const DARWIN_LIST_APPS = 'system_profiler SPApplicationsDataType -json'
