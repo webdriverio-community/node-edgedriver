@@ -1,6 +1,5 @@
 import os from 'node:os'
 import { vi, test, expect } from 'vitest'
-import fetch from 'node-fetch'
 
 import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
@@ -14,25 +13,39 @@ vi.mock('node:os', () => ({
     }
 }))
 
-vi.mock('node-fetch', async (orig) => {
-    const origFetch: any = await orig()
-    const apiResponse = await import('./__fixtures__/api.json', { assert: { type: 'json' } })
-    return {
-        default: vi.fn(async (url) => {
-            if (url === EDGE_PRODUCTS_API) {
-                return {
-                    json: vi.fn().mockResolvedValue(apiResponse.default)
-                }
-            } else if (!url.includes('LATEST_RELEASE')) {
-                return {
-                    text: vi.fn().mockResolvedValue('��123.456.789.0')
-                }
-            }
+// Mock the global fetch function
+const mockFetch = vi.fn()
+vi.stubGlobal('fetch', mockFetch)
 
-            return origFetch.default(url)
-        })
-    }
-})
+// Set up the mock implementation
+const setupFetchMock = async () => {
+    const apiResponse = await import('./__fixtures__/api.json', { assert: { type: 'json' } })
+    mockFetch.mockImplementation(async (url) => {
+        if (url === EDGE_PRODUCTS_API) {
+            return {
+                json: vi.fn().mockResolvedValue(apiResponse.default)
+            }
+        } else if (url.includes('LATEST_RELEASE')) {
+            // For LATEST_RELEASE URLs, return the version text
+            return {
+                ok: true,
+                status: 200,
+                text: vi.fn().mockResolvedValue('��114.0.1823.82')
+            }
+        }
+
+        // For other URLs (like tagged versions), return default text response
+        return {
+            ok: true,
+            status: 200,
+            text: vi.fn().mockResolvedValue('��123.456.789.0'),
+            json: vi.fn().mockResolvedValue({})
+        }
+    })
+}
+
+// Setup the mock before tests
+await setupFetchMock()
 
 test('fetchVersion', async () => {
     expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
