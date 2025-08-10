@@ -4,7 +4,6 @@ import os from 'node:os'
 import cp from 'node:child_process'
 import { format } from 'node:util'
 
-import fetch, { type RequestInit } from 'node-fetch'
 import { XMLParser } from 'fast-xml-parser'
 import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
 import { HttpsProxyAgent } from 'https-proxy-agent'
@@ -23,7 +22,12 @@ interface ProductAPIResponse {
   }[]
 }
 
-const fetchOpts: RequestInit = {}
+// Extend RequestInit to include the agent property that Node.js built-in fetch supports
+interface NodeRequestInit extends RequestInit {
+  agent?: HttpsProxyAgent<string> | HttpProxyAgent<string>
+}
+
+const fetchOpts: NodeRequestInit = {}
 if (process.env.HTTPS_PROXY) {
     fetchOpts.agent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
 } else if (process.env.HTTP_PROXY) {
