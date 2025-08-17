@@ -14,10 +14,10 @@ import { getEdgePath } from 'edge-paths'
 import { sort, findByWhich, hasAccessSync } from './utils.js'
 
 interface ApplicationDataType {
-  SPApplicationsDataType: {
-    info: string
-    path: string
-  }[]
+    SPApplicationsDataType: {
+        info: string
+        path: string
+    }[]
 }
 
 const DARWIN_LIST_APPS = 'system_profiler SPApplicationsDataType -json'
@@ -124,8 +124,8 @@ function win32() {
     }))
 
     /**
-   * fallback using edge-path
-   */
+     * fallback using edge-path
+     */
     if (installations.length === 0) {
         const edgePath = getEdgePath()
         if (hasAccessSync(edgePath)) {
@@ -165,8 +165,8 @@ function findEdgeExecutables(folder: string) {
 
 export default () => {
     /**
-   * Check for the EDGE_BINARY_PATH env variable
-   */
+     * Check for the EDGE_BINARY_PATH env variable
+     */
     const binaryPathEnv = process.env.EDGE_BINARY_PATH
     if (typeof binaryPathEnv === 'string' && binaryPathEnv) {
         return process.env.EDGE_BINARY_PATH
