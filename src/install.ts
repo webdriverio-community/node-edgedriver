@@ -14,17 +14,17 @@ import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_U
 import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
 
 interface ProductAPIResponse {
-  Product: string
-  Releases: {
-    Platform: string
-    Architecture: string
-    ProductVersion: string
-  }[]
+    Product: string
+    Releases: {
+        Platform: string
+        Architecture: string
+        ProductVersion: string
+    }[]
 }
 
 // Extend RequestInit to include the agent property that Node.js built-in fetch supports
 interface NodeRequestInit extends RequestInit {
-  agent?: HttpsProxyAgent<string> | HttpProxyAgent<string>
+    agent?: HttpsProxyAgent<string> | HttpProxyAgent<string>
 }
 
 const fetchOpts: NodeRequestInit = {}
@@ -147,8 +147,8 @@ async function getEdgeVersionUnix (edgePath: string) {
         return resolve(stdout)
     }))
     /**
-   * example output: "Microsoft Edge 124.0.2478.105 unknown"
-   */
+     * example output: "Microsoft Edge 124.0.2478.105 unknown"
+     */
     return versionOutput
     /**
      * trim the output
@@ -173,15 +173,15 @@ export async function fetchVersion (edgeVersion: string) {
     const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
 
     /**
-   * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
-   */
+     * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
+     */
     if (edgeVersion.split('.').length === 4) {
         return edgeVersion
     }
 
     /**
-   * if browser version is a tagged version, e.g. stable, beta, dev, canary
-   */
+     * if browser version is a tagged version, e.g. stable, beta, dev, canary
+     */
     if (TAGGED_VERSIONS.includes(edgeVersion.toLowerCase())) {
         const apiResponse = await fetch(EDGE_PRODUCTS_API, fetchOpts).catch((err) => {
             log.error(`Couldn't fetch version from ${EDGE_PRODUCTS_API}: ${err.stack}`)
@@ -191,8 +191,8 @@ export async function fetchVersion (edgeVersion: string) {
         const product = products.find((p) => p.Product.toLowerCase() === edgeVersion.toLowerCase())
         const productVersion = product?.Releases.find((r) => (
             /**
-       * On Mac we all product versions are universal to its architecture
-       */
+             * On Mac we all product versions are universal to its architecture
+             */
             (platform === 'mac' && r.Platform === 'MacOS') ||
       /**
        * On Windows we need to check for the architecture
@@ -213,8 +213,8 @@ export async function fetchVersion (edgeVersion: string) {
     }
 
     /**
-   * check for a number in the version and check for that
-   */
+     * check for a number in the version and check for that
+     */
     const MATCH_VERSION = /\d+/g
     if (edgeVersion.match(MATCH_VERSION)) {
         const [major] = edgeVersion.match(MATCH_VERSION)
