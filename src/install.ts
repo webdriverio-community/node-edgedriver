@@ -5,7 +5,7 @@ import cp from 'node:child_process'
 import { format } from 'node:util'
 
 import { XMLParser } from 'fast-xml-parser'
-import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
+import { BlobReader, BlobWriter, ZipReader, type FileEntry } from '@zip.js/zip.js'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HttpProxyAgent } from 'http-proxy-agent'
 
@@ -239,10 +239,11 @@ async function downloadZip(res: Awaited<ReturnType<typeof fetch>>, cacheDir: str
         if (entry.directory) {
             continue
         }
+        const fileEntry = entry as FileEntry
         if (!await hasAccess(path.dirname(unzippedFilePath))) {
             await fsp.mkdir(path.dirname(unzippedFilePath), { recursive: true })
         }
-        const content = await entry.getData<Blob>(new BlobWriter())
+        const content = await fileEntry.getData<Blob>(new BlobWriter())
         await writeFile(unzippedFilePath, content.stream())
     }
 }
