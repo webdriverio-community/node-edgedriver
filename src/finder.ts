@@ -44,8 +44,8 @@ const darwinGetInstallations = (appPaths: string[], suffixes: string[]) => {
 }
 
 const newLineRegex = /\r?\n/
-const EDGE_BINARY_NAMES = ['edge', 'msedge', 'microsoft-edge', 'microsoft-edge-dev']
-const EDGE_REGEX = /((ms|microsoft))?edge/g
+const EDGE_BINARY_NAMES = ['edge', 'msedge', 'microsoft-edge', 'microsoft-edge-stable', 'microsoft-edge-beta', 'microsoft-edge-dev']
+const EDGE_REGEX = /((ms|microsoft))?-?edge-?((stable|dev|beta))?/g
 
 function darwin() {
     const suffixes = [
