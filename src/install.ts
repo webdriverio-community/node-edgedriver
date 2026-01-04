@@ -11,7 +11,7 @@ import { HttpProxyAgent } from 'http-proxy-agent'
 
 import findEdgePath from './finder.js'
 import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
-import { hasAccess, getNameByArchitecture, sleep } from './utils.js'
+import { hasAccess, getNameByArchitecture, sleep, extractBasicAuthFromUrl } from './utils.js'
 
 interface ProductAPIResponse {
     Product: string
@@ -67,9 +67,14 @@ export async function download (
 
 async function downloadDriver(version: string) {
     try {
-        const downloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+        const rawDownloadUrl = format(DOWNLOAD_URL, version, getNameByArchitecture())
+        const { url: downloadUrl, authHeader } = extractBasicAuthFromUrl(rawDownloadUrl)
         log.info(`Downloading Edgedriver from ${downloadUrl}`)
-        const res = await fetch(downloadUrl, fetchOpts)
+        const opts: NodeRequestInit = { ...fetchOpts }
+        if (authHeader) {
+            opts.headers = { ...opts.headers, Authorization: authHeader }
+        }
+        const res = await fetch(downloadUrl, opts)
 
         if (!res.body || !res.ok || res.status !== 200) {
             throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
@@ -112,9 +117,14 @@ async function downloadDriver(version: string) {
         log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
         const versionResponse = await fetch(alternativeDownloadUrl, fetchOpts)
         const alternativeVersion = sanitizeVersion(await versionResponse.text())
-        const downloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
+        const rawDownloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
+        const { url: downloadUrl, authHeader } = extractBasicAuthFromUrl(rawDownloadUrl)
         log.info(`Downloading Edgedriver from ${downloadUrl}`)
-        const res = await fetch(downloadUrl, fetchOpts)
+        const opts: NodeRequestInit = { ...fetchOpts }
+        if (authHeader) {
+            opts.headers = { ...opts.headers, Authorization: authHeader }
+        }
+        const res = await fetch(downloadUrl, opts)
         if (!res.body || !res.ok || res.status !== 200) {
             throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
         }

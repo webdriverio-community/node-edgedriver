@@ -110,3 +110,32 @@ export async function hasAccess(filePath: string) {
 export function sleep (ms = 100) {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export interface BasicAuthResult {
+    url: string
+    authHeader?: string
+}
+
+/**
+ * Extract Basic Auth credentials from a URL and return the cleaned URL with auth header.
+ * This is needed because fetch() doesn't support URLs with embedded credentials.
+ * @param urlString URL that may contain credentials (e.g., https://user:pass@host/)
+ * @returns Object with cleaned URL and optional Authorization header
+ */
+export function extractBasicAuthFromUrl(urlString: string): BasicAuthResult {
+    try {
+        const url = new URL(urlString)
+        if (url.username || url.password) {
+            const credentials = btoa(`${url.username}:${url.password}`)
+            url.username = ''
+            url.password = ''
+            return {
+                url: url.toString(),
+                authHeader: `Basic ${credentials}`
+            }
+        }
+    } catch {
+        // If URL parsing fails, return original string
+    }
+    return { url: urlString }
+}
