@@ -3,7 +3,7 @@ import { vi, test, expect } from 'vitest'
 
 import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
-import { getNameByArchitecture, parseParams } from '../src/utils.js'
+import { getNameByArchitecture, parseParams, extractBasicAuthFromUrl } from '../src/utils.js'
 import { EDGE_PRODUCTS_API } from '../src/constants.js'
 
 vi.mock('node:os', () => ({
@@ -116,3 +116,28 @@ test('exports', () => {
     expect(typeof pkgExports.findEdgePath).toBe('function')
     expect(typeof pkgExports.start).toBe('function')
 })
+
+test('extractBasicAuthFromUrl with credentials', () => {
+    const result = extractBasicAuthFromUrl('https://myuser:mypassword@cdn.example.com/path/file.zip')
+    expect(result.url).toBe('https://cdn.example.com/path/file.zip')
+    expect(result.authHeader).toBe('Basic ' + Buffer.from('myuser:mypassword').toString('base64'))
+})
+
+test('extractBasicAuthFromUrl without credentials', () => {
+    const result = extractBasicAuthFromUrl('https://cdn.example.com/path/file.zip')
+    expect(result.url).toBe('https://cdn.example.com/path/file.zip')
+    expect(result.authHeader).toBeUndefined()
+})
+
+test('extractBasicAuthFromUrl with only username', () => {
+    const result = extractBasicAuthFromUrl('https://myuser@cdn.example.com/path/file.zip')
+    expect(result.url).toBe('https://cdn.example.com/path/file.zip')
+    expect(result.authHeader).toBe('Basic ' + Buffer.from('myuser:').toString('base64'))
+})
+
+test('extractBasicAuthFromUrl with invalid URL returns original', () => {
+    const result = extractBasicAuthFromUrl('not-a-valid-url')
+    expect(result.url).toBe('not-a-valid-url')
+    expect(result.authHeader).toBeUndefined()
+})
+
