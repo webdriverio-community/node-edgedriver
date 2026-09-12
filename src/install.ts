@@ -81,7 +81,7 @@ async function downloadDriver(version: string) {
 
         return res
     } catch (err) {
-        log.error(`Failed to download Edgedriver: ${err.message}, trying alternative latest stable...`)
+        throw new Error(`Failed to download Edgedriver: ${err.message}, trying alternative latest stable...`)
     }
 }
 
