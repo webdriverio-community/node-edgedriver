@@ -83,32 +83,6 @@ async function downloadDriver(version: string) {
     } catch (err) {
         log.error(`Failed to download Edgedriver: ${err.message}, trying alternative latest stable...`)
     }
-
-    try {
-        const latestStableRes = await fetch('EDGEDRIVER_LATEST_STABLE', fetchOpts)
-        if (!latestStableRes.ok || latestStableRes.status !== 200) {
-            throw new Error('Failed to fetch LATEST_STABLE version')
-        }
-
-        const latestVersion = sanitizeVersion(await latestStableRes.text())
-        const rawDownloadUrl = format(DOWNLOAD_URL, latestVersion, getNameByArchitecture())
-        const { url: downloadUrl, authHeader } = extractBasicAuthFromUrl(rawDownloadUrl)
-
-        log.info(`Downloading alternative Edgedriver version from ${downloadUrl}`)
-        const opts: NodeRequestInit = { ...fetchOpts }
-        if (authHeader) {
-            opts.headers = { ...opts.headers, Authorization: authHeader }
-        }
-
-        const res = await fetch(downloadUrl, opts)
-        if (!res.body || !res.ok || res.status !== 200) {
-            throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
-        }
-
-        return res
-    } catch (fallbackErr) {
-        throw new Error(`Fallback failed: ${fallbackErr.message})`)
-    }
 }
 
 async function getEdgeVersionWin (edgePath: string) {

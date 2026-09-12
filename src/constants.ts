@@ -15,4 +15,3 @@ export const BINARY_FILE = 'msedgedriver' + (os.platform() === 'win32' ? '.exe' 
 export const DEFAULT_ALLOWED_ORIGINS = ['*']
 export const DEFAULT_ALLOWED_IPS = ['']
 export const log: Logger = logger('edgedriver')
-export const EDGEDRIVER_LATEST_STABLE = `${BASE_CDN_URL}/LATEST_STABLE`
