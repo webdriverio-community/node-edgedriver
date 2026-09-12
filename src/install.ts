@@ -130,7 +130,7 @@ async function getEdgeVersionUnix (edgePath: string) {
 
 export async function fetchVersion (edgeVersion: string) {
     const p = os.platform()
-    const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'mac' : 'linux'
+    const platform = p === 'win32' ? 'win' : p === 'darwin' ? 'macos' : 'linux'
 
     /**
      * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
