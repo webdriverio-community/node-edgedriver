@@ -35,8 +35,5 @@ jobs:
 
       - name: 🧪 Run Tests
         uses: GabrielBB/xvfb-action@b706e4e27b14669b486812790492dc50ca16b465 # v1.7
-        env:
-            # Todo remove once the containers edge browser installed version are no more 152
-            EDGEDRIVER_VERSION: 152.0.4191.62 # Latest 152 are missing driver for some architecture so forcing this version!
         with:
           run: npm test
