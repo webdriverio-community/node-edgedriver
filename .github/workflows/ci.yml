@@ -36,6 +36,6 @@ jobs:
       - name: 🧪 Run Tests
         uses: GabrielBB/xvfb-action@b706e4e27b14669b486812790492dc50ca16b465 # v1.7
         env:
-            EDGEDRIVER_VERSION: latest # Some 152 architecture like m1 are gone form msedge repository so forcing stable version to unblock pipeline
+            EDGEDRIVER_VERSION: 153 # Some 152 architecture like m1 are gone form msedge repository so forcing stable version to unblock pipeline
         with:
           run: npm test
