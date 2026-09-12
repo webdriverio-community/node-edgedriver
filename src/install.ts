@@ -153,7 +153,7 @@ export async function fetchVersion (edgeVersion: string) {
             /**
              * On Mac we all product versions are universal to its architecture
              */
-            (platform === 'mac' && r.Platform === 'MacOS') ||
+            (platform === 'macos' && r.Platform === 'MacOS') ||
       /**
        * On Windows we need to check for the architecture
        */

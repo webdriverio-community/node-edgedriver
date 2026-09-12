@@ -66,17 +66,17 @@ test('fetchVersion', async () => {
     expect(await fetchVersion('stable')).toBe('121.0.2277.112')
     vi.mocked(os.arch).mockReturnValue('x64')
     vi.mocked(os.platform).mockReturnValue('darwin')
-    expect(await fetchVersion('stable')).toBe('123.456.789.0')
+    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
     vi.mocked(os.arch).mockReturnValue('arm64')
     vi.mocked(os.platform).mockReturnValue('darwin')
-    expect(await fetchVersion('stable')).toBe('123.456.789.0')
+    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
 })
 
 test('fetchVersion with proxy support', async () => {
     vi.resetModules()
     process.env.HTTPS_PROXY = 'https://proxy.com'
     const { fetchVersion } = await import('../src/install.js')
-    expect(await fetchVersion('stable')).toBe('123.456.789.0')
+    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
     expect(fetch).toBeCalledWith(
         expect.any(String),
         expect.objectContaining({
