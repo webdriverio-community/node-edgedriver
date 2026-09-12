@@ -85,7 +85,7 @@ async function downloadDriver(version: string) {
     }
 
     try {
-        const latestStableRes = await fetch('https://msedgedriver.microsoft.com/LATEST_STABLE', fetchOpts)
+        const latestStableRes = await fetch('EDGEDRIVER_LATEST_STABLE', fetchOpts)
         if (!latestStableRes.ok || latestStableRes.status !== 200) {
             throw new Error('Failed to fetch LATEST_STABLE version')
         }
