@@ -4,13 +4,12 @@ import os from 'node:os'
 import cp from 'node:child_process'
 import { format } from 'node:util'
 
-import { XMLParser } from 'fast-xml-parser'
 import { BlobReader, BlobWriter, ZipReader, type FileEntry } from '@zip.js/zip.js'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { HttpProxyAgent } from 'http-proxy-agent'
 
 import findEdgePath from './finder.js'
-import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, EDGEDRIVER_BUCKET, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
+import { TAGGED_VERSIONS, EDGE_PRODUCTS_API, TAGGED_VERSION_URL, LATEST_RELEASE_URL, DOWNLOAD_URL, BINARY_FILE, log } from './constants.js'
 import { hasAccess, getNameByArchitecture, sleep, extractBasicAuthFromUrl } from './utils.js'
 
 interface ProductAPIResponse {
@@ -82,56 +81,33 @@ async function downloadDriver(version: string) {
 
         return res
     } catch (err) {
-        log.error(`Failed to download Edgedriver: ${err.message}, trying alternative download URL...`)
+        log.error(`Failed to download Edgedriver: ${err.message}, trying alternative latest stable...`)
     }
 
     try {
-        const majorVersion = version.split('.')[0]
-        const platform = process.platform === 'darwin'
-            ? 'macos'
-            : process.platform === 'win32'
-                ? 'windows'
-                : 'linux'
-        log.info(`Attempt to fetch latest v${majorVersion} for ${platform} from ${EDGEDRIVER_BUCKET}`)
-        const versions = await fetch(EDGEDRIVER_BUCKET, {
-            ...fetchOpts,
-            headers: {
-                accept: '*/*',
-                'accept-language': 'en-US,en;q=0.9',
-                'cache-control': 'no-cache',
-                'content-type': 'application/json; charset=utf-8',
-                pragma: 'no-cache',
-            }
-        })
-
-        const parser = new XMLParser()
-        const { EnumerationResults } = parser.parse(await versions.text())
-        const blobName = `LATEST_RELEASE_${majorVersion}_${platform.toUpperCase()}`
-        const alternativeDownloadUrl = EnumerationResults.Blobs.Blob
-            .find((blob: { Name: string }) => blob.Name === blobName).Url
-
-        if (!alternativeDownloadUrl) {
-            throw new Error(`Couldn't find alternative download URL for ${version}`)
+        const latestStableRes = await fetch('https://msedgedriver.microsoft.com/LATEST_STABLE', fetchOpts)
+        if (!latestStableRes.ok || latestStableRes.status !== 200) {
+            throw new Error('Failed to fetch LATEST_STABLE version')
         }
 
-        log.info(`Downloading alternative Edgedriver version from ${alternativeDownloadUrl}`)
-        const versionResponse = await fetch(alternativeDownloadUrl, fetchOpts)
-        const alternativeVersion = sanitizeVersion(await versionResponse.text())
-        const rawDownloadUrl = format(DOWNLOAD_URL, alternativeVersion, getNameByArchitecture())
+        const latestVersion = sanitizeVersion(await latestStableRes.text())
+        const rawDownloadUrl = format(DOWNLOAD_URL, latestVersion, getNameByArchitecture())
         const { url: downloadUrl, authHeader } = extractBasicAuthFromUrl(rawDownloadUrl)
-        log.info(`Downloading Edgedriver from ${downloadUrl}`)
+
+        log.info(`Downloading alternative Edgedriver version from ${downloadUrl}`)
         const opts: NodeRequestInit = { ...fetchOpts }
         if (authHeader) {
             opts.headers = { ...opts.headers, Authorization: authHeader }
         }
+
         const res = await fetch(downloadUrl, opts)
         if (!res.body || !res.ok || res.status !== 200) {
             throw new Error(`Failed to download binary from ${downloadUrl} (statusCode ${res.status})`)
         }
 
         return res
-    } catch (err) {
-        throw new Error(`Failed to download Edgedriver: ${err.message}`)
+    } catch (fallbackErr) {
+        throw new Error(`Fallback failed: ${fallbackErr.message})`)
     }
 }
 
