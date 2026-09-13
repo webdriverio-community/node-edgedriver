@@ -81,6 +81,11 @@ async function downloadDriver(version: string) {
 
         return res
     } catch (err) {
+        if (isFullValidVersion(version)) {
+            const latestVersion = await fetchVersion(version.split('.')[0])
+            log.error(`Failed to download Edgedriver for version ${version}, retrying with latest driver for major version ${latestVersion}`)
+            return await downloadDriver(latestVersion)
+        }
         throw new Error(`Failed to download Edgedriver: ${err.message}`)
     }
 }
@@ -128,6 +133,8 @@ async function getEdgeVersionUnix (edgePath: string) {
         .pop()
 }
 
+export const isFullValidVersion = (version: string) => version.split('.').length === 4
+
 export async function fetchVersion (edgeVersion: string) {
     const p = os.platform()
     const platform = p === 'win32' ? 'windows' : p === 'darwin' ? 'macos' : 'linux'
@@ -135,7 +142,7 @@ export async function fetchVersion (edgeVersion: string) {
     /**
      * if version has 4 digits it is a valid version, e.g. 109.0.1467.0
      */
-    if (edgeVersion.split('.').length === 4) {
+    if (isFullValidVersion(edgeVersion)) {
         return edgeVersion
     }
 
