@@ -83,8 +83,10 @@ async function downloadDriver(version: string) {
     } catch (err) {
         if (isFullValidVersion(version)) {
             const latestVersion = await fetchVersion(version.split('.')[0])
-            log.error(`Failed to download Edgedriver for version ${version}, retrying with latest driver for major version ${latestVersion}`)
-            return await downloadDriver(latestVersion)
+            if (latestVersion !== version) {
+                log.error(`Failed to download Edgedriver for version ${version}, retrying with latest driver for major version ${latestVersion}`)
+                return await downloadDriver(latestVersion)
+            }
         }
         throw new Error(`Failed to download Edgedriver: ${err.message}`)
     }
