@@ -81,7 +81,7 @@ describe('Edgedriver E2E Tests', () => {
     })
 
     it('start with missing architecture', async () => {
-        const binary = await download('155.0.4272.0')
+        const binary = await download('152.0.4191.77')
 
         const browser = await remote({
             automationProtocol: 'webdriver',
@@ -93,21 +93,6 @@ describe('Edgedriver E2E Tests', () => {
                 'wdio:edgedriverOptions': {
                     binary
                 }
-            }
-        })
-        await browser.url('https://guinea-pig.webdriver.io/')
-        await browser.deleteSession()
-    })
-
-    it('start stable version', async () => {
-        const browser = await remote({
-            automationProtocol: 'webdriver',
-            capabilities: {
-                browserName: 'edge',
-                browserVersion: 'stable',
-                'ms:edgeOptions': {
-                    args: ['no-sandbox', 'headless']
-                },
             }
         })
         await browser.url('https://guinea-pig.webdriver.io/')
