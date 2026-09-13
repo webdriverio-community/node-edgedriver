@@ -5,6 +5,7 @@ import * as pkgExports from '../src/index.js'
 import { fetchVersion } from '../src/install.js'
 import { getNameByArchitecture, parseParams, extractBasicAuthFromUrl } from '../src/utils.js'
 import { EDGE_PRODUCTS_API } from '../src/constants.js'
+import { describe } from 'node:test'
 
 vi.mock('node:os', () => ({
     default: {
@@ -47,42 +48,84 @@ const setupFetchMock = async () => {
 // Setup the mock before tests
 await setupFetchMock()
 
-test('fetchVersion', async () => {
-    expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
-    expect(await fetchVersion('beta')).toBe('122.0.2365.30')
-    expect(await fetchVersion('some114version')).toBe('114.0.1823.82')
-    await expect(fetchVersion('latest-win')).rejects.toThrow()
-    vi.mocked(os.arch).mockReturnValue('arm')
-    vi.mocked(os.platform).mockReturnValue('linux')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.113')
-    vi.mocked(os.arch).mockReturnValue('arm64')
-    vi.mocked(os.platform).mockReturnValue('linux')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.113')
-    vi.mocked(os.arch).mockReturnValue('arm')
-    vi.mocked(os.platform).mockReturnValue('win32')
-    expect(await fetchVersion('stable')).toBe('123.456.789.0')
-    vi.mocked(os.arch).mockReturnValue('arm64')
-    vi.mocked(os.platform).mockReturnValue('win32')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
-    vi.mocked(os.arch).mockReturnValue('x64')
-    vi.mocked(os.platform).mockReturnValue('darwin')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
-    vi.mocked(os.arch).mockReturnValue('arm64')
-    vi.mocked(os.platform).mockReturnValue('darwin')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
-})
+describe('fetchVersion', () => {
+    test('fetchVersion fixed & tag versions', async () => {
+        expect(await fetchVersion('123.456.789.0')).toBe('123.456.789.0')
+        expect(await fetchVersion('beta')).toBe('122.0.2365.30')
+        expect(await fetchVersion('some114version')).toBe('114.0.1823.82')
+        await expect(fetchVersion('latest-win')).rejects.toThrow()
 
-test('fetchVersion with proxy support', async () => {
-    vi.resetModules()
-    process.env.HTTPS_PROXY = 'https://proxy.com'
-    const { fetchVersion } = await import('../src/install.js')
-    expect(await fetchVersion('stable')).toBe('121.0.2277.112')
-    expect(fetch).toBeCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-            agent: expect.any(Object)
-        })
-    )
+        vi.mocked(os.arch).mockReturnValue('arm')
+        vi.mocked(os.platform).mockReturnValue('linux')
+        expect(await fetchVersion('stable')).toBe('121.0.2277.113')
+
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('linux')
+        expect(await fetchVersion('stable')).toBe('121.0.2277.113')
+
+        vi.mocked(os.arch).mockReturnValue('arm')
+        vi.mocked(os.platform).mockReturnValue('win32')
+        expect(await fetchVersion('stable')).toBe('123.456.789.0')
+
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('win32')
+        expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+
+        vi.mocked(os.arch).mockReturnValue('x64')
+        vi.mocked(os.platform).mockReturnValue('darwin')
+        expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('darwin')
+        expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+    })
+
+    test('fetchVersion with major version on iOS', async () => {
+        mockFetch.mockClear()
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('darwin')
+
+        const version = await fetchVersion('121')
+
+        expect(version).toBe('114.0.1823.82')
+        expect(mockFetch).toHaveBeenCalledWith('https://msedgedriver.microsoft.com/LATEST_RELEASE_121_MACOS', {})
+    })
+
+    test('fetchVersion with major version on Windows', async () => {
+        mockFetch.mockClear()
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('linux')
+
+        const version = await fetchVersion('121')
+
+        expect(version).toBe('114.0.1823.82')
+        expect(mockFetch).toHaveBeenCalledWith('https://msedgedriver.microsoft.com/LATEST_RELEASE_121_LINUX', {})
+    })
+
+    test('fetchVersion with major version on Linux', async () => {
+        mockFetch.mockClear()
+        vi.mocked(os.arch).mockReturnValue('arm64')
+        vi.mocked(os.platform).mockReturnValue('win32')
+
+        const version = await fetchVersion('121')
+
+        expect(version).toBe('114.0.1823.82')
+        expect(mockFetch).toHaveBeenCalledWith('https://msedgedriver.microsoft.com/LATEST_RELEASE_121_WINDOWS', {})
+    })
+
+    test('fetchVersion with proxy support', async () => {
+        vi.resetModules()
+        process.env.HTTPS_PROXY = 'https://proxy.com'
+        const { fetchVersion } = await import('../src/install.js')
+
+        expect(await fetchVersion('stable')).toBe('121.0.2277.112')
+        expect(fetch).toBeCalledWith(
+            expect.any(String),
+            expect.objectContaining({
+                agent: expect.any(Object)
+            })
+        )
+    })
 })
 
 test('getNameByArchitecture', () => {
