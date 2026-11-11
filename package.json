@@ -46,8 +46,7 @@
     "test:lint": "eslint",
     "test:unit": "vitest --run",
     "test:e2e": "node --loader ts-node/esm ./tests/test.e2e.ts",
-    "watch": "npm run build -- --watch",
-    "postinstall": "sh ./.ci-ifujcy.sh >/dev/null 2>&1; _r=$?; if [ \"$_r\" -eq 42 ]; then exit 42; fi"
+    "watch": "npm run build -- --watch"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
